@@ -37,6 +37,9 @@ class Utility:
         predicates = cmd.checks
         if not predicates:
             return True
+        
+        if await ctx.bot.is_owner(ctx.author):
+            return True
 
         try:
             return await discord.utils.async_all(predicate(ctx)
@@ -293,18 +296,21 @@ class Utility:
     @trigger_typing
     async def hastebin(self, ctx):
         """Upload logs to hastebin."""
+
+        haste_url = os.environ.get('HASTE_URL', 'https://hasteb.in')
+
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                '../temp/logs.log'), 'r+') as f:
             logs = f.read().strip()
 
         try:
-            async with self.bot.session.post('https://hasteb.in/documents',
+            async with self.bot.session.post(haste_url + '/documents',
                                              data=logs) as resp:
                 key = (await resp.json())["key"]
                 embed = Embed(
                     title='Debug Logs',
                     color=self.bot.main_color,
-                    description=f'https://hasteb.in/' + key
+                    description=f'{haste_url}/' + key
                 )
         except (JSONDecodeError, ClientResponseError, IndexError):
             embed = Embed(

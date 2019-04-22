@@ -38,6 +38,8 @@ When a user sends a direct message to the bot, a channel is created within an is
 
 Currently, the easiest and fastest way to set up the bot is by using Heroku, which is a service that offers a free plan for hosting applications. If you choose to install the bot using Heroku, you will not need to download anything. The [**installation guide**](https://github.com/kyb3r/modmail/wiki/Installation) will guide you through the entire installation process. If you run into any problems, join our [Discord server](https://discord.gg/etJNHCQ) for help and support. Even if you don't have any issues, you should come and check out our awesome Discord community! :wink:
 
+Interactive installation: [**https://taaku18.github.io/modmail/installation**](https://taaku18.github.io/modmail/installation)
+
 ---
 
 # Notable Features
@@ -56,11 +58,6 @@ Have you sent something with the `?reply` command by accident? Don't fret, you c
 
 Thread conversations are automatically logged with a generated viewable website of the complete thread. Logs are rendered with styled HTML and presented in an aesthetically pleasing way—it blends seamlessly with the mobile version of Discord. An example of a logged conversation: https://logs.modmail.tk/02032d65a6f3
 
-## Automatic Updates
-
-The bot checks for new updates every hour and will automatically update to the newest version. Modmail is under active development, which means that you can always look forward to new and useful features! To disable this functionality, for example, when you customized your fork, you can do so by adding a `disable_autoupdates` config variable and set it to `yes` or `true`. 
-
----
 
 # Contributing
 
