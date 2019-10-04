@@ -101,7 +101,7 @@ class Thread:
             overwrites = None
 
         channel = await self.bot.modmail_guild.create_text_channel(
-            name=self.manager.format_channel_name(recipient),
+            name=self.manager.generate_channel_name(),
             category=category,
             overwrites=overwrites,
             reason="Creating a thread channel",
@@ -120,7 +120,6 @@ class Thread:
             log_url = log_count = None
             # ensure core functionality still works
 
-        topic = f"User ID: {recipient.id}"
         if creator:
             mention = None
         else:
@@ -140,7 +139,6 @@ class Thread:
                 self.ready = True
                 self.bot.dispatch("thread_ready", self)
 
-        await channel.edit(topic=topic)
         self.bot.loop.create_task(send_genesis_message())
 
         # Once thread is ready, tell the recipient.
@@ -731,13 +729,11 @@ class ThreadManager:
     ) -> Thread:
         return await self.find(recipient=recipient) or self.create(recipient)
 
-    def format_channel_name(self, author):
-        """Sanitises a username for use with text channel names"""
-        name = author.name.lower()
-        allowed = string.ascii_letters + string.digits + "-"
-        new_name = "".join(l for l in name if l in allowed) or "null"
-        new_name += f"-{author.discriminator}"
-
+    def generate_channel_name(self):
+        """Generates a time object 
+        for use with text channel names"""
+        new_name = datetime.now().strftime("%s")
+        
         while new_name in [c.name for c in self.bot.modmail_guild.text_channels]:
             new_name += "-x"  # two channels with same name
 
