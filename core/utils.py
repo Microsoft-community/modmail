@@ -354,6 +354,16 @@ def format_channel_name(author, guild, exclude_channel=None):
 
     return new_name
 
+def generate_channel_name(self):
+    """Generates a time object 
+    for use with text channel names"""
+    new_name = datetime.now().strftime("%s")
+
+    while new_name in [c.name for c in self.bot.modmail_guild.text_channels]:
+        new_name += "-x"  # two channels with same name
+
+    return new_name
+
 
 def tryint(x):
     try:
