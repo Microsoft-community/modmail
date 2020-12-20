@@ -250,7 +250,7 @@ class Thread:
         )
         self.bot.dispatch("thread_ready", self)
 
-     def generate_channel_name(self):
+    def generate_channel_name(self):
         """Generates a time object 
         for use with text channel names"""
         new_name = datetime.now().strftime("%s")
