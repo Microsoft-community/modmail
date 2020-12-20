@@ -120,7 +120,7 @@ class Thread:
 
         try:
             channel = await self.bot.modmail_guild.create_text_channel(
-                name=generate_channel_name(),
+                name=generate_channel_name(self),
                 category=category,
                 overwrites=overwrites,
                 reason="Creating a thread channel.",
