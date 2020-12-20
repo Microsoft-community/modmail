@@ -354,6 +354,7 @@ def format_channel_name(author, guild, exclude_channel=None):
 
     return new_name
 
+
 def generate_channel_name(self):
     """Generates a time object 
     for use with text channel names"""
@@ -363,6 +364,7 @@ def generate_channel_name(self):
         new_name += "-x"  # two channels with same name
 
     return new_name
+
 
 def tryint(x):
     try:
