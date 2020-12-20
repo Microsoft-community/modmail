@@ -1,20 +1,50 @@
+import base64
+import functools
 import re
+import string
 import typing
+from difflib import get_close_matches
+from distutils.util import strtobool as _stb  # pylint: disable=import-error
+from itertools import takewhile, zip_longest
 from urllib import parse
 
-from discord import Object
+import discord
 from discord.ext import commands
 
-from colorama import Fore, Style
-from core.models import PermissionLevel
+__all__ = [
+    "strtobool",
+    "User",
+    "truncate",
+    "format_preview",
+    "is_image_url",
+    "parse_image_url",
+    "human_join",
+    "days",
+    "cleanup_code",
+    "match_user_id",
+    "create_not_found_embed",
+    "parse_alias",
+    "normalize_alias",
+    "format_description",
+    "trigger_typing",
+    "escape_code_block",
+    "format_channel_name",
+    "tryint",
+]
 
 
-def info(*msgs):
-    return f'{Fore.CYAN}{" ".join(msgs)}{Style.RESET_ALL}'
-
-
-def error(*msgs):
-    return f'{Fore.RED}{" ".join(msgs)}{Style.RESET_ALL}'
+def strtobool(val):
+    if isinstance(val, bool):
+        return val
+    try:
+        return _stb(str(val))
+    except ValueError:
+        val = val.lower()
+        if val == "enable":
+            return 1
+        if val == "disable":
+            return 0
+        raise
 
 
 class User(commands.IDConverter):
@@ -26,20 +56,20 @@ class User(commands.IDConverter):
     # noinspection PyCallByClass,PyTypeChecker
     async def convert(self, ctx, argument):
         try:
-            return await commands.MemberConverter.convert(self, ctx, argument)
+            return await commands.MemberConverter().convert(ctx, argument)
         except commands.BadArgument:
             pass
         try:
-            return await commands.UserConverter.convert(self, ctx, argument)
+            return await commands.UserConverter().convert(ctx, argument)
         except commands.BadArgument:
             pass
         match = self._get_id_match(argument)
         if match is None:
             raise commands.BadArgument('User "{}" not found'.format(argument))
-        return Object(int(match.group(1)))
+        return discord.Object(int(match.group(1)))
 
 
-def truncate(text: str, max: int = 50) -> str:
+def truncate(text: str, max: int = 50) -> str:  # pylint: disable=redefined-builtin
     """
     Reduces the string to `max` length, by trimming the message into "...".
 
@@ -56,6 +86,7 @@ def truncate(text: str, max: int = 50) -> str:
     str
         The truncated text.
     """
+    text = text.strip()
     return text[: max - 3].strip() + "..." if len(text) > max else text
 
 
@@ -76,10 +107,10 @@ def format_preview(messages: typing.List[typing.Dict[str, typing.Any]]):
     messages = messages[:3]
     out = ""
     for message in messages:
-        if message.get("type") in ("note", "internal"):
+        if message.get("type") in {"note", "internal"}:
             continue
         author = message["author"]
-        content = message["content"].replace("\n", " ")
+        content = str(message["content"]).replace("\n", " ")
         name = author["name"] + "#" + str(author["discriminator"])
         prefix = "[M]" if author["mod"] else "[R]"
         out += truncate(f"`{prefix} {name}:` {content}", max=75) + "\n"
@@ -87,7 +118,7 @@ def format_preview(messages: typing.List[typing.Dict[str, typing.Any]]):
     return out or "No Messages"
 
 
-def is_image_url(url: str, _=None) -> bool:
+def is_image_url(url: str, **kwargs) -> str:
     """
     Check if the URL is pointing to an image.
 
@@ -101,10 +132,18 @@ def is_image_url(url: str, _=None) -> bool:
     bool
         Whether the URL is a valid image URL.
     """
-    return bool(parse_image_url(url))
+    if url.startswith("https://gyazo.com") or url.startswith("http://gyazo.com"):
+        # gyazo support
+        url = re.sub(
+            r"(http[s]?:\/\/)((?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)",
+            r"\1i.\2.png",
+            url,
+        )
+
+    return parse_image_url(url, **kwargs)
 
 
-def parse_image_url(url: str) -> str:
+def parse_image_url(url: str, *, convert_size=True) -> str:
     """
     Convert the image URL into a sized Discord avatar.
 
@@ -122,7 +161,10 @@ def parse_image_url(url: str) -> str:
     url = parse.urlsplit(url)
 
     if any(url.path.lower().endswith(i) for i in types):
-        return parse.urlunsplit((*url[:3], "size=128", url[-1]))
+        if convert_size:
+            return parse.urlunsplit((*url[:3], "size=128", url[-1]))
+        else:
+            return parse.urlunsplit(url)
     return ""
 
 
@@ -174,6 +216,29 @@ def cleanup_code(content: str) -> str:
     return content.strip("` \n")
 
 
+TOPIC_TITLE_REGEX = re.compile(r"\bTitle: (.*)\n(?:User ID: )\b", flags=re.IGNORECASE | re.DOTALL)
+TOPIC_UID_REGEX = re.compile(r"\bUser ID:\s*(\d{17,21})\b", flags=re.IGNORECASE)
+
+
+def match_title(text: str) -> int:
+    """
+    Matches a title in the foramt of "Title: XXXX"
+
+    Parameters
+    ----------
+    text : str
+        The text of the user ID.
+
+    Returns
+    -------
+    Optional[str]
+        The title if found
+    """
+    match = TOPIC_TITLE_REGEX.search(text)
+    if match is not None:
+        return match.group(1)
+
+
 def match_user_id(text: str) -> int:
     """
     Matches a user ID in the format of "User ID: 12345".
@@ -188,25 +253,110 @@ def match_user_id(text: str) -> int:
     int
         The user ID if found. Otherwise, -1.
     """
-    match = re.match(r"^User ID: (\d+)$", text)
+    match = TOPIC_UID_REGEX.search(text)
     if match is not None:
         return int(match.group(1))
     return -1
 
 
-def get_perm_level(cmd) -> PermissionLevel:
-    for check in cmd.checks:
-        perm = getattr(check, "permission_level", None)
-        if perm is not None:
-            return perm
-    for check in cmd.checks:
-        if "is_owner" in str(check):
-            return PermissionLevel.OWNER
-    return PermissionLevel.INVALID
+def create_not_found_embed(word, possibilities, name, n=2, cutoff=0.6) -> discord.Embed:
+    # Single reference of Color.red()
+    embed = discord.Embed(
+        color=discord.Color.red(), description=f"**{name.capitalize()} `{word}` cannot be found.**"
+    )
+    val = get_close_matches(word, possibilities, n=n, cutoff=cutoff)
+    if val:
+        embed.description += "\nHowever, perhaps you meant...\n" + "\n".join(val)
+    return embed
 
 
-async def ignore(coro):
+def parse_alias(alias, *, split=True):
+    def encode_alias(m):
+        return "\x1AU" + base64.b64encode(m.group(1).encode()).decode() + "\x1AU"
+
+    def decode_alias(m):
+        return base64.b64decode(m.group(1).encode()).decode()
+
+    alias = re.sub(
+        r"(?:(?<=^)(?:\s*(?<!\\)(?:\")\s*)|(?<=&&)(?:\s*(?<!\\)(?:\")\s*))(.+?)"
+        r"(?:(?:\s*(?<!\\)(?:\")\s*)(?=&&)|(?:\s*(?<!\\)(?:\")\s*)(?=$))",
+        encode_alias,
+        alias,
+    ).strip()
+
+    aliases = []
+    if not alias:
+        return aliases
+
+    if split:
+        iterate = re.split(r"\s*&&\s*", alias)
+    else:
+        iterate = [alias]
+
+    for a in iterate:
+        a = re.sub("\x1AU(.+?)\x1AU", decode_alias, a)
+        if a[0] == a[-1] == '"':
+            a = a[1:-1]
+        aliases.append(a)
+
+    return aliases
+
+
+def normalize_alias(alias, message=""):
+    aliases = parse_alias(alias)
+    contents = parse_alias(message, split=False)
+
+    final_aliases = []
+    for a, content in zip_longest(aliases, contents):
+        if a is None:
+            break
+
+        if content:
+            final_aliases.append(f"{a} {content}")
+        else:
+            final_aliases.append(a)
+
+    return final_aliases
+
+
+def format_description(i, names):
+    return "\n".join(
+        ": ".join((str(a + i * 15), b))
+        for a, b in enumerate(takewhile(lambda x: x is not None, names), start=1)
+    )
+
+
+def trigger_typing(func):
+    @functools.wraps(func)
+    async def wrapper(self, ctx: commands.Context, *args, **kwargs):
+        await ctx.trigger_typing()
+        return await func(self, ctx, *args, **kwargs)
+
+    return wrapper
+
+
+def escape_code_block(text):
+    return re.sub(r"```", "`\u200b``", text)
+
+
+def format_channel_name(author, guild, exclude_channel=None):
+    """Sanitises a username for use with text channel names"""
+    name = author.name.lower()
+    name = new_name = (
+        "".join(l for l in name if l not in string.punctuation and l.isprintable()) or "null"
+    ) + f"-{author.discriminator}"
+
+    counter = 1
+    existed = set(c.name for c in guild.text_channels if c != exclude_channel)
+    while new_name in existed:
+        new_name = f"{name}_{counter}"  # multiple channels with same name
+        counter += 1
+
+    return new_name
+
+
+def tryint(x):
     try:
-        await coro
-    except Exception:
-        pass
+        return int(x)
+    except (ValueError, TypeError):
+        return x

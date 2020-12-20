@@ -3,7 +3,6 @@ UserFriendlyTime by Rapptz
 Source:
 https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/utils/time.py
 """
-import logging
 import re
 from datetime import datetime
 
@@ -12,9 +11,9 @@ from discord.ext.commands import BadArgument, Converter
 import parsedatetime as pdt
 from dateutil.relativedelta import relativedelta
 
-from core.utils import error
+from core.models import getLogger
 
-logger = logging.getLogger("Modmail")
+logger = getLogger(__name__)
 
 
 class ShortTime:
@@ -34,7 +33,7 @@ class ShortTime:
     def __init__(self, argument):
         match = self.compiled.fullmatch(argument)
         if match is None or not match.group(0):
-            raise BadArgument("invalid time provided")
+            raise BadArgument("Invalid time provided.")
 
         data = {k: int(v) for k, v in match.groupdict(default="0").items()}
         now = datetime.utcnow()
@@ -54,15 +53,12 @@ class HumanTime:
         now = datetime.utcnow()
         dt, status = self.calendar.parseDT(argument, sourceTime=now)
         if not status.hasDateOrTime:
-            raise BadArgument('invalid time provided, try e.g. "tomorrow" or "3 days"')
+            raise BadArgument('Invalid time provided, try e.g. "tomorrow" or "3 days".')
 
         if not status.hasTime:
             # replace it with the current time
             dt = dt.replace(
-                hour=now.hour,
-                minute=now.minute,
-                second=now.second,
-                microsecond=now.microsecond,
+                hour=now.hour, minute=now.minute, second=now.second, microsecond=now.microsecond
             )
 
         self.dt = dt
@@ -85,35 +81,26 @@ class FutureTime(Time):
         super().__init__(argument)
 
         if self._past:
-            raise BadArgument("this time is in the past")
+            raise BadArgument("The time is in the past.")
 
 
-class UserFriendlyTime(Converter):
+class UserFriendlyTimeSync(Converter):
     """That way quotes aren't absolutely necessary."""
 
-    def __init__(self, converter: Converter = None):
-        if isinstance(converter, type) and issubclass(converter, Converter):
-            converter = converter()
-
-        if converter is not None and not isinstance(converter, Converter):
-            raise TypeError("commands.Converter subclass necessary.")
+    def __init__(self):
         self.raw: str = None
         self.dt: datetime = None
         self.arg = None
         self.now: datetime = None
-        self.converter = converter
 
-    async def check_constraints(self, ctx, now, remaining):
+    def check_constraints(self, now, remaining):
         if self.dt < now:
             raise BadArgument("This time is in the past.")
 
-        if self.converter is not None:
-            self.arg = await self.converter.convert(ctx, remaining)
-        else:
-            self.arg = remaining
+        self.arg = remaining
         return self
 
-    async def convert(self, ctx, argument):
+    def convert(self, ctx, argument):
         self.raw = argument
         remaining = ""
         try:
@@ -126,25 +113,20 @@ class UserFriendlyTime(Converter):
                 data = {k: int(v) for k, v in match.groupdict(default="0").items()}
                 remaining = argument[match.end() :].strip()
                 self.dt = self.now + relativedelta(**data)
-                return await self.check_constraints(ctx, self.now, remaining)
+                return self.check_constraints(self.now, remaining)
 
             # apparently nlp does not like "from now"
             # it likes "from x" in other cases though
             # so let me handle the 'now' case
             if argument.endswith(" from now"):
                 argument = argument[:-9].strip()
-            # handles "for xxx hours"
-            if argument.startswith("for "):
-                argument = argument[4:].strip()
-
-            if argument[0:2] == "me":
-                # starts with "me to", "me in", or "me at "
-                if argument[0:6] in ("me to ", "me in ", "me at "):
-                    argument = argument[6:]
+            # handles "in xxx hours"
+            if argument.startswith("in "):
+                argument = argument[3:].strip()
 
             elements = calendar.nlp(argument, sourceTime=self.now)
             if elements is None or not elements:
-                return await self.check_constraints(ctx, self.now, argument)
+                return self.check_constraints(self.now, argument)
 
             # handle the following cases:
             # "date time" foo
@@ -155,7 +137,7 @@ class UserFriendlyTime(Converter):
             dt, status, begin, end, _ = elements[0]
 
             if not status.hasDateOrTime:
-                return await self.check_constraints(ctx, self.now, argument)
+                return self.check_constraints(self.now, argument)
 
             if begin not in (0, 1) and end != len(argument):
                 raise BadArgument(
@@ -194,10 +176,15 @@ class UserFriendlyTime(Converter):
             elif len(argument) == end:
                 remaining = argument[:begin].strip()
 
-            return await self.check_constraints(ctx, self.now, remaining)
+            return self.check_constraints(self.now, remaining)
         except Exception:
-            logger.exception(error("Something went wrong while parsing the time"))
+            logger.exception("Something went wrong while parsing the time.")
             raise
+
+
+class UserFriendlyTime(UserFriendlyTimeSync):
+    async def convert(self, ctx, argument):
+        return super().convert(ctx, argument)
 
 
 def human_timedelta(dt, *, source=None):
