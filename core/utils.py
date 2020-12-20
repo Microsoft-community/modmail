@@ -364,7 +364,6 @@ def generate_channel_name(self):
 
     return new_name
 
-
 def tryint(x):
     try:
         return int(x)

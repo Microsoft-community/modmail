@@ -250,15 +250,15 @@ class Thread:
         )
         self.bot.dispatch("thread_ready", self)
 
-    def generate_channel_name(self):
-        """Generates a time object 
-        for use with text channel names"""
-        new_name = datetime.now().strftime("%s")
+        def generate_channel_name(self):
+            """Generates a time object 
+            for use with text channel names"""
+            new_name = datetime.now().strftime("%s")
 
-        while new_name in [c.name for c in self.bot.modmail_guild.text_channels]:
-            new_name += "-x"  # two channels with same name
+            while new_name in [c.name for c in self.bot.modmail_guild.text_channels]:
+                new_name += "-x"  # two channels with same name
 
-        return new_name
+            return new_name
 
     def _format_info_embed(self, user, log_url, log_count, color):
         """Get information about a member of a server
