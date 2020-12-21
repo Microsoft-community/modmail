@@ -108,16 +108,6 @@ class Thread:
         self.bot.dispatch("thread_initiate", self)
         recipient = self.recipient
 
-        def generate_channel_name(self):
-            """Generates a time object 
-            for use with text channel names"""
-            new_name = datetime.now().strftime("%s")
-
-            while new_name in [c.name for c in self.bot.modmail_guild.text_channels]:
-                new_name += "-x"  # two channels with same name
-
-            return new_name
-
         # in case it creates a channel outside of category
         overwrites = {
             self.bot.modmail_guild.default_role: discord.PermissionOverwrite(read_messages=False)
@@ -130,7 +120,7 @@ class Thread:
 
         try:
             channel = await self.bot.modmail_guild.create_text_channel(
-                name=generate_channel_name(self),
+                name=format_channel_name(recipient, self.bot.modmail_guild),
                 category=category,
                 overwrites=overwrites,
                 reason="Creating a thread channel.",
@@ -162,6 +152,7 @@ class Thread:
             log_url = log_count = None
             # ensure core functionality still works
 
+        await channel.edit(topic=f"User ID: {recipient.id}")
         self.ready = True
 
         if creator is not None and creator != recipient:
