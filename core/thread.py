@@ -1029,6 +1029,7 @@ class Thread:
 
     async def set_title(self, title) -> None:
         user_id = match_user_id(self.channel.topic)
+        await self.channel.edit(topic=f"Title: {title}\nUser ID: {user_id}")
 
 
 class ThreadManager:
@@ -1067,6 +1068,7 @@ class ThreadManager:
                 )
                 if thread is not None:
                     logger.debug("Found thread with tempered ID.")
+                    await channel.edit(topic=f"User ID: {user_id}")
             return thread
 
         if recipient:
