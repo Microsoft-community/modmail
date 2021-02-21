@@ -1,7 +1,7 @@
 import base64
+import datetime
 import functools
 import re
-import string
 import typing
 from difflib import get_close_matches
 from distutils.util import strtobool as _stb  # pylint: disable=import-error
@@ -234,7 +234,7 @@ def match_title(text: str) -> int:
     Optional[str]
         The title if found
     """
-    match = TOPIC_TITLE_REGEX.search(text)
+    match = TOPIC_TITLE_REGEX.search(text or "")
     if match is not None:
         return match.group(1)
 
@@ -253,7 +253,7 @@ def match_user_id(text: str) -> int:
     int
         The user ID if found. Otherwise, -1.
     """
-    match = TOPIC_UID_REGEX.search(text)
+    match = TOPIC_UID_REGEX.search(text or "")
     if match is not None:
         return int(match.group(1))
     return -1
@@ -341,10 +341,7 @@ def escape_code_block(text):
 
 def format_channel_name(author, guild, exclude_channel=None):
     """Sanitises a username for use with text channel names"""
-    name = author.name.lower()
-    name = new_name = (
-        "".join(l for l in name if l not in string.punctuation and l.isprintable()) or "null"
-    ) + f"-{author.discriminator}"
+    name = new_name = str(datetime.datetime.now().timestamp())
 
     counter = 1
     existed = set(c.name for c in guild.text_channels if c != exclude_channel)

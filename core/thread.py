@@ -152,7 +152,6 @@ class Thread:
             log_url = log_count = None
             # ensure core functionality still works
 
-        await channel.edit(topic=f"User ID: {recipient.id}")
         self.ready = True
 
         if creator is not None and creator != recipient:
@@ -1019,8 +1018,7 @@ class Thread:
         return " ".join(mentions)
 
     async def set_title(self, title) -> None:
-        user_id = match_user_id(self.channel.topic)
-        await self.channel.edit(topic=f"Title: {title}\nUser ID: {user_id}")
+        await self.channel.edit(topic=f"Title: {title}")
 
 
 class ThreadManager:
@@ -1052,14 +1050,11 @@ class ThreadManager:
     ) -> typing.Optional[Thread]:
         """Finds a thread from cache or from discord channel topics."""
         if recipient is None and channel is not None:
-            thread = self._find_from_channel(channel)
+            thread = await self._find_from_channel(channel)
             if thread is None:
                 user_id, thread = next(
                     ((k, v) for k, v in self.cache.items() if v.channel == channel), (-1, None)
                 )
-                if thread is not None:
-                    logger.debug("Found thread with tempered ID.")
-                    await channel.edit(topic=f"User ID: {user_id}")
             return thread
 
         if recipient:
@@ -1082,16 +1077,27 @@ class ThreadManager:
                     )
                     thread = None
         else:
-            channel = discord.utils.get(
-                self.bot.modmail_guild.text_channels, topic=f"User ID: {recipient_id}"
-            )
+            # check for genesis message with User ID in all potential channels
+            if not channel:
+                for potential_channel in self.bot.modmail_guild.text_channels:
+                    async for message in potential_channel.history(limit=10, oldest_first=True):
+                        if (
+                            message.author == self.bot.user
+                            and message.embeds
+                            and message.embeds[0].color
+                            and message.embeds[0].color.value == self.bot.main_color
+                            and message.embeds[0].footer.text
+                        ):
+                            if recipient_id == match_user_id(message.embeds[0].footer.text):
+                                channel = potential_channel
+                                break
             if channel:
                 thread = Thread(self, recipient or recipient_id, channel)
                 self.cache[recipient_id] = thread
                 thread.ready = True
         return thread
 
-    def _find_from_channel(self, channel):
+    async def _find_from_channel(self, channel):
         """
         Tries to find a thread from a channel channel topic,
         if channel topic doesnt exist for some reason, falls back to
@@ -1100,8 +1106,18 @@ class ThreadManager:
         """
         user_id = -1
 
-        if channel.topic:
-            user_id = match_user_id(channel.topic)
+        # find genesis message to retrieve User ID
+        async for message in channel.history(limit=10, oldest_first=True):
+            if (
+                message.author == self.bot.user
+                and message.embeds
+                and message.embeds[0].color
+                and message.embeds[0].color.value == self.bot.main_color
+                and message.embeds[0].footer.text
+            ):
+                user_id = match_user_id(message.embeds[0].footer.text)
+                if user_id != -1:
+                    break
 
         if user_id == -1:
             return None

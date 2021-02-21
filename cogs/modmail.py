@@ -1334,10 +1334,6 @@ class Modmail(commands.Cog):
         sent_emoji, blocked_emoji = await self.bot.retrieve_emoji()
 
         if ctx.thread:
-            user_id = match_user_id(ctx.channel.topic)
-            if user_id == -1:
-                logger.info("Setting current channel's topic to User ID.")
-                await ctx.channel.edit(topic=f"User ID: {ctx.thread.id}")
             return await self.bot.add_reaction(ctx.message, sent_emoji)
 
         logger.info("Attempting to fix a broken thread %s.", ctx.channel.name)
@@ -1349,7 +1345,6 @@ class Modmail(commands.Cog):
         )
         if thread is not None:
             logger.debug("Found thread with tempered ID.")
-            await ctx.channel.edit(reason="Fix broken Modmail thread", topic=f"User ID: {user_id}")
             return await self.bot.add_reaction(ctx.message, sent_emoji)
 
         # find genesis message to retrieve User ID
@@ -1374,66 +1369,13 @@ class Modmail(commands.Cog):
                         )
                     thread.ready = True
                     logger.info(
-                        "Setting current channel's topic to User ID and created new thread."
-                    )
-                    await ctx.channel.edit(
-                        reason="Fix broken Modmail thread", topic=f"User ID: {user_id}"
+                        "Created new thread for current channel."
                     )
                     return await self.bot.add_reaction(ctx.message, sent_emoji)
 
         else:
             logger.warning("No genesis message found.")
 
-        # match username from channel name
-        # username-1234, username-1234_1, username-1234_2
-        m = re.match(r"^(.+)-(\d{4})(?:_\d+)?$", ctx.channel.name)
-        if m is not None:
-            users = set(
-                filter(
-                    lambda member: member.name == m.group(1)
-                    and member.discriminator == m.group(2),
-                    ctx.guild.members,
-                )
-            )
-            if len(users) == 1:
-                user = users.pop()
-                name = format_channel_name(
-                    user, self.bot.modmail_guild, exclude_channel=ctx.channel
-                )
-                recipient = self.bot.get_user(user.id)
-                if user.id in self.bot.threads.cache:
-                    thread = self.bot.threads.cache[user.id]
-                    if thread.channel:
-                        embed = discord.Embed(
-                            title="Delete Channel",
-                            description="This thread channel is no longer in use. "
-                            f"All messages will be directed to {ctx.channel.mention} instead.",
-                            color=self.bot.error_color,
-                        )
-                        embed.set_footer(
-                            text='Please manually delete this channel, do not use "{prefix}close".'
-                        )
-                        try:
-                            await thread.channel.send(embed=embed)
-                        except discord.HTTPException:
-                            pass
-                if recipient is None:
-                    self.bot.threads.cache[user.id] = thread = Thread(
-                        self.bot.threads, user_id, ctx.channel
-                    )
-                else:
-                    self.bot.threads.cache[user.id] = thread = Thread(
-                        self.bot.threads, recipient, ctx.channel
-                    )
-                thread.ready = True
-                logger.info("Setting current channel's topic to User ID and created new thread.")
-                await ctx.channel.edit(
-                    reason="Fix broken Modmail thread", name=name, topic=f"User ID: {user.id}"
-                )
-                return await self.bot.add_reaction(ctx.message, sent_emoji)
-
-            elif len(users) >= 2:
-                logger.info("Multiple users with the same name and discriminator.")
         return await self.bot.add_reaction(ctx.message, blocked_emoji)
 
     @commands.command()
