@@ -190,14 +190,13 @@ class UnseenFormatter(Formatter):
             except KeyError:
                 return "{" + key + "}"
         else:
-            return Formatter.get_value(key, args, kwds)
+            return super().get_value(key, args, kwds)
 
 
 class SimilarCategoryConverter(commands.CategoryChannelConverter):
     async def convert(self, ctx, argument):
         bot = ctx.bot
         guild = ctx.guild
-        result = None
 
         try:
             return await super().convert(ctx, argument)
@@ -227,6 +226,8 @@ class DummyMessage:
     """
 
     def __init__(self, message):
+        if message:
+            message.attachments = []
         self._message = message
 
     def __getattr__(self, name: str):
@@ -275,4 +276,7 @@ class DMDisabled(IntEnum):
 class HostingMethod(IntEnum):
     HEROKU = 0
     PM2 = 1
-    OTHER = 2
+    SYSTEMD = 2
+    SCREEN = 3
+    DOCKER = 4
+    OTHER = 5

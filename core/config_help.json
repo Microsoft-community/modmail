@@ -52,7 +52,8 @@
       "`{prefix}mention Yo~ Here's a new thread for ya!`"
     ],
     "notes": [
-      "Unfortunately, it's not currently possible to disable mention. You do not have to include a mention."
+      "To disable mention, use command `{prefix}mention disable`.",
+      "See also: `{prefix}help mention`."
     ]
   },
   "main_color": {
@@ -86,7 +87,7 @@
     "thumbnail": "https://placehold.it/100/e74c3c?text=+"
   },
   "user_typing": {
-    "default": "Disabled",
+    "default": "Enabled",
     "description": "When this is set to `yes`, whenever the recipient user starts to type in their DM channel, the moderator will see “{bot.user.display_name} is typing…” in the thread channel.",
     "examples": [
       "`{prefix}config set user_typing yes`",
@@ -94,6 +95,17 @@
     ],
     "notes": [
       "See also: `mod_typing`."
+    ]
+  },
+  "use_user_id_channel_name": {
+    "default": "No",
+    "description": "When this is set to `yes`, new thread channels will be named with the recipient's ID instead of the recipient's name.",
+    "examples": [
+      "`{prefix}config set use_user_id_channel_name yes`",
+      "`{prefix}config set use_user_id_channel_name no`"
+    ],
+    "notes": [
+      "This config is suitable for servers in Server Discovery to comply with channel name restrictions."
     ]
   },
   "mod_typing": {
@@ -192,8 +204,19 @@
       "`{prefix}config set update_channel_id 9234932582312` (9234932582312 is the channel ID)"
     ],
     "notes": [
-      "This has no effect unless `disable_autoupdates` is set to no.",
+      "This has no effect unless `disable_autoupdates` is set to no and `update_notifications` is set to yes.",
       "See also: `log_channel_id`"
+    ]
+  },
+  "update_notifications": {
+    "default": "Yes",
+    "description": "This is the channel where update notifications are sent to.",
+    "examples": [
+      "`{prefix}config set update_notifications no"
+    ],
+    "notes": [
+      "This has no effect unless `disable_autoupdates` is set to no.",
+      "See also: `update_channel_id`"
     ]
   },
   "sent_emoji": {
@@ -651,12 +674,23 @@
   },
   "alert_on_mention": {
     "default": "No",
-    "description": "Mentions all mods (mention) in logs channel when bot is mentioned",
+    "description": "Mentions all mods (mention) in mention channel when bot is mentioned",
     "examples":[
       "`{prefix}config set alert_on_mention yes`"
     ],
     "notes": [
-      "See also: `mention`"
+      "See also: `mention`, `mention_channel_id`"
+    ]
+  },
+  "silent_alert_on_mention": {
+    "default": "No",
+    "description": "Send a message in the mention channel without mentioning all mods (mention).",
+    "examples":[
+      "`{prefix}config set alert_on_mention yes`"
+    ],
+    "notes": [
+      "This has no effect unless `alert_on_mention` is set to yes.",
+      "See also: `mention`, `mention_channel_id`"
     ]
   },
   "show_timestamp": {
@@ -667,6 +701,16 @@
     ],
     "notes": []
   },
+  "anonymous_snippets": {
+    "default": "No",
+    "description": "Sends snippets anonymously.",
+    "examples":[
+      "`{prefix}config set anonymous_snippets yes`"
+    ],
+    "notes": [
+      "See also: `anon_avatar_url`, `anon_tag`."
+    ]
+  },
   "confirm_thread_creation": {
     "default": "No",
     "description": "Ensure users confirm that they want to create a new thread",
@@ -674,7 +718,7 @@
       "`{prefix}config set confirm_thread_creation yes`"
     ],
     "notes": [
-      "See also: `confirm_thread_creation_title`, `confirm_thread_response`, `confirm_thread_creation_accept`, `confirm_thread_creation_deny``"
+      "See also: `confirm_thread_creation_title`, `confirm_thread_response`, `confirm_thread_creation_accept`, `confirm_thread_creation_deny`"
     ]
   },
   "confirm_thread_creation_title": {
@@ -833,6 +877,15 @@
   "disable_autoupdates": {
     "default": "No",
     "description": "Controls if autoupdates should be disabled or not.",
+    "examples": [
+    ],
+    "notes": [
+      "This configuration can only to be set through `.env` file or environment (config) variables."
+    ]
+  },
+  "disable_updates": {
+    "default": "No",
+    "description": "Controls if the update command should be disabled or not.",
     "examples": [
     ],
     "notes": [

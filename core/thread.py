@@ -2,9 +2,9 @@ import asyncio
 import copy
 import io
 import re
+import time
 import typing
 from datetime import datetime, timedelta
-import time
 from types import SimpleNamespace
 
 import isodate
@@ -105,7 +105,7 @@ class Thread:
 
     async def setup(self, *, creator=None, category=None, initial_message=None):
         """Create the thread channel and other io related initialisation tasks"""
-        self.bot.dispatch("thread_initiate", self)
+        self.bot.dispatch("thread_initiate", self, creator, category, initial_message)
         recipient = self.recipient
 
         # in case it creates a channel outside of category
@@ -120,23 +120,32 @@ class Thread:
 
         try:
             channel = await self.bot.modmail_guild.create_text_channel(
-                name=format_channel_name(recipient, self.bot.modmail_guild),
+                name=format_channel_name(self.bot, recipient),
                 category=category,
                 overwrites=overwrites,
                 reason="Creating a thread channel.",
             )
-        except discord.HTTPException as e:  # Failed to create due to missing perms.
-            logger.critical("An error occurred while creating a thread.", exc_info=True)
-            self.manager.cache.pop(self.id)
+        except discord.HTTPException as e:
+            # try again but null-discrim (name could be banned)
+            try:
+                channel = await self.bot.modmail_guild.create_text_channel(
+                    name=format_channel_name(self.bot, recipient, force_null=True),
+                    category=category,
+                    overwrites=overwrites,
+                    reason="Creating a thread channel.",
+                )
+            except discord.HTTPException as e:  # Failed to create due to missing perms.
+                logger.critical("An error occurred while creating a thread.", exc_info=True)
+                self.manager.cache.pop(self.id)
 
-            embed = discord.Embed(color=self.bot.error_color)
-            embed.title = "Error while trying to create a thread."
-            embed.description = str(e)
-            embed.add_field(name="Recipient", value=recipient.mention)
+                embed = discord.Embed(color=self.bot.error_color)
+                embed.title = "Error while trying to create a thread."
+                embed.description = str(e)
+                embed.add_field(name="Recipient", value=recipient.mention)
 
-            if self.bot.log_channel is not None:
-                await self.bot.log_channel.send(embed=embed)
-            return
+                if self.bot.log_channel is not None:
+                    await self.bot.log_channel.send(embed=embed)
+                return
 
         self._channel = channel
 
@@ -236,8 +245,8 @@ class Thread:
             await self.bot.api.update_note_ids(ids)
 
         async def activate_auto_triggers():
-            message = DummyMessage(copy.copy(initial_message))
-            if message:
+            if initial_message:
+                message = DummyMessage(copy.copy(initial_message))
                 try:
                     return await self.bot.trigger_auto_triggers(message, channel)
                 except RuntimeError:
@@ -249,7 +258,7 @@ class Thread:
             activate_auto_triggers(),
             send_persistent_notes(),
         )
-        self.bot.dispatch("thread_ready", self)
+        self.bot.dispatch("thread_ready", self, creator, category, initial_message)
 
     def _format_info_embed(self, user, log_url, log_count, color):
         """Get information about a member of a server
@@ -291,7 +300,11 @@ class Thread:
         #     embed.add_field(name='Mention', value=user.mention)
         # embed.add_field(name='Registered', value=created + days(created))
 
-        footer = "User ID: " + str(user.id)
+        if user.dm_channel:
+            footer = f"User ID: {user.id} • DM ID: {user.dm_channel.id}"
+        else:
+            footer = f"User ID: {user.id}"
+
         embed.set_author(name=str(user), icon_url=user.avatar_url, url=log_url)
         # embed.set_thumbnail(url=avi)
 
@@ -650,7 +663,7 @@ class Thread:
         tasks = []
         if not isinstance(message, discord.Message):
             tasks += [message1.delete()]
-        if message2 is not None:
+        elif message2 is not None:
             tasks += [message2.delete()]
         elif message1.embeds[0].author.name.startswith("Persistent Note"):
             tasks += [self.bot.api.delete_note(message1.id)]
@@ -658,10 +671,12 @@ class Thread:
             await asyncio.gather(*tasks)
 
     async def find_linked_message_from_dm(self, message, either_direction=False):
-        if either_direction and message.embeds:
+        if either_direction and message.embeds and message.embeds[0].author.url:
             compare_url = message.embeds[0].author.url
+            compare_id = compare_url.split("#")[-1]
         else:
             compare_url = None
+            compare_id = None
 
         if self.channel is not None:
             async for linked_message in self.channel.history():
@@ -679,6 +694,11 @@ class Thread:
                 msg_id = int(msg_id)
                 if int(msg_id) == message.id:
                     return linked_message
+
+                if compare_id is not None and compare_id.isdigit():
+                    if int(msg_id) == int(compare_id):
+                        return linked_message
+
             raise ValueError("Thread channel message not found.")
 
     async def edit_dm_message(self, message: discord.Message, content: str) -> None:
@@ -733,24 +753,31 @@ class Thread:
         tasks = []
 
         try:
-            await self.send(
+            user_msg = await self.send(
                 message,
                 destination=self.recipient,
                 from_mod=True,
                 anonymous=anonymous,
                 plain=plain,
             )
-        except Exception:
+        except Exception as e:
             logger.error("Message delivery failed:", exc_info=True)
+            if isinstance(e, discord.Forbidden):
+                description = (
+                    "Your message could not be delivered as "
+                    "the recipient is only accepting direct "
+                    "messages from friends, or the bot was "
+                    "blocked by the recipient."
+                )
+            else:
+                description = (
+                    "Your message could not be delivered due "
+                    "to an unknown error. Check `?debug` for "
+                    "more information"
+                )
             tasks.append(
                 message.channel.send(
-                    embed=discord.Embed(
-                        color=self.bot.error_color,
-                        description="Your message could not be delivered as "
-                        "the recipient is only accepting direct "
-                        "messages from friends, or the bot was "
-                        "blocked by the recipient.",
-                    )
+                    embed=discord.Embed(color=self.bot.error_color, description=description,)
                 )
             )
         else:
@@ -782,6 +809,7 @@ class Thread:
 
         await asyncio.gather(*tasks)
         self.bot.dispatch("thread_reply", self, True, message, anonymous, plain)
+        return (user_msg, msg)  # sent_to_user, sent_to_thread_channel
 
     async def send(
         self,
@@ -884,7 +912,14 @@ class Thread:
             if is_image_url(url, convert_size=False)
         ]
         images.extend(image_urls)
-        images.extend((str(i.image_url), f"{i.name} Sticker", True) for i in message.stickers)
+        images.extend(
+            (
+                str(i.image_url) if isinstance(i.image_url, discord.Asset) else i.image_url,
+                f"{i.name} Sticker",
+                True,
+            )
+            for i in message.stickers
+        )
 
         embedded_image = False
 
@@ -894,15 +929,22 @@ class Thread:
         additional_count = 1
 
         for url, filename, is_sticker in images:
-            if not prioritize_uploads or (is_image_url(url) and not embedded_image and filename):
-                embed.set_image(url=url)
+            if (
+                not prioritize_uploads or ((url is None or is_image_url(url)) and filename)
+            ) and not embedded_image:
+                if url is not None:
+                    embed.set_image(url=url)
                 if filename:
                     if is_sticker:
-                        embed.add_field(name=filename, value=f"\u200b")
+                        if url is None:
+                            description = "Unable to retrieve sticker image"
+                        else:
+                            description = "\u200b"
+                        embed.add_field(name=filename, value=description)
                     else:
                         embed.add_field(name="Image", value=f"[{filename}]({url})")
                 embedded_image = True
-            elif filename is not None:
+            else:
                 if note:
                     color = self.bot.main_color
                 elif from_mod:
@@ -911,9 +953,12 @@ class Thread:
                     color = self.bot.recipient_color
 
                 img_embed = discord.Embed(color=color)
-                img_embed.set_image(url=url)
-                img_embed.title = filename
-                img_embed.url = url
+
+                if url is not None:
+                    img_embed.set_image(url=url)
+                    img_embed.url = url
+                if filename is not None:
+                    img_embed.title = filename
                 img_embed.set_footer(text=f"Additional Image Upload ({additional_count})")
                 img_embed.timestamp = message.created_at
                 additional_images.append(destination.send(embed=img_embed))
@@ -921,7 +966,7 @@ class Thread:
 
         file_upload_count = 1
 
-        for url, filename in attachments:
+        for url, filename, _ in attachments:
             embed.add_field(
                 name=f"File upload ({file_upload_count})", value=f"[{filename}]({url})"
             )
@@ -1052,7 +1097,7 @@ class ThreadManager:
     ) -> typing.Optional[Thread]:
         """Finds a thread from cache or from discord channel topics."""
         if recipient is None and channel is not None:
-            thread = self._find_from_channel(channel)
+            thread = await self._find_from_channel(channel)
             if thread is None:
                 user_id, thread = next(
                     ((k, v) for k, v in self.cache.items() if v.channel == channel), (-1, None)
@@ -1087,11 +1132,13 @@ class ThreadManager:
             )
             if channel:
                 thread = Thread(self, recipient or recipient_id, channel)
-                self.cache[recipient_id] = thread
+                if thread.recipient:
+                    # only save if data is valid
+                    self.cache[recipient_id] = thread
                 thread.ready = True
         return thread
 
-    def _find_from_channel(self, channel):
+    async def _find_from_channel(self, channel):
         """
         Tries to find a thread from a channel channel topic,
         if channel topic doesnt exist for some reason, falls back to
@@ -1109,9 +1156,13 @@ class ThreadManager:
         if user_id in self.cache:
             return self.cache[user_id]
 
-        recipient = self.bot.get_user(user_id)
+        try:
+            recipient = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+        except discord.NotFound:
+            recipient = None
+
         if recipient is None:
-            self.cache[user_id] = thread = Thread(self, user_id, channel)
+            thread = Thread(self, user_id, channel)
         else:
             self.cache[user_id] = thread = Thread(self, recipient, channel)
         thread.ready = True
@@ -1125,6 +1176,7 @@ class ThreadManager:
         message: discord.Message = None,
         creator: typing.Union[discord.Member, discord.User] = None,
         category: discord.CategoryChannel = None,
+        manual_trigger: bool = True,
     ) -> Thread:
         """Creates a Modmail thread"""
 
@@ -1153,20 +1205,24 @@ class ThreadManager:
 
         # Schedule thread setup for later
         cat = self.bot.main_category
-        if category is None and len(cat.channels) == 50:
+        if category is None and len(cat.channels) >= 49:
             fallback_id = self.bot.config["fallback_category_id"]
             if fallback_id:
                 fallback = discord.utils.get(cat.guild.categories, id=int(fallback_id))
-                if fallback and len(fallback.channels) != 50:
+                if fallback and len(fallback.channels) < 49:
                     category = fallback
 
             if not category:
                 category = await cat.clone(name="Fallback Modmail")
-                self.bot.config.set("fallback_category_id", category.id)
+                self.bot.config.set("fallback_category_id", str(category.id))
                 await self.bot.config.update()
 
-        if message and self.bot.config["confirm_thread_creation"]:
-            confirm = await message.channel.send(
+        if (message or not manual_trigger) and self.bot.config["confirm_thread_creation"]:
+            if not manual_trigger:
+                destination = recipient
+            else:
+                destination = message.channel
+            confirm = await destination.send(
                 embed=discord.Embed(
                     title=self.bot.config["confirm_thread_creation_title"],
                     description=self.bot.config["confirm_thread_response"],
@@ -1181,7 +1237,7 @@ class ThreadManager:
             try:
                 r, _ = await self.bot.wait_for(
                     "reaction_add",
-                    check=lambda r, u: u.id == message.author.id
+                    check=lambda r, u: u.id == recipient.id
                     and r.message.id == confirm.id
                     and r.message.channel.id == confirm.channel.id
                     and str(r.emoji) in (accept_emoji, deny_emoji),
@@ -1193,7 +1249,7 @@ class ThreadManager:
                 await confirm.remove_reaction(accept_emoji, self.bot.user)
                 await asyncio.sleep(0.2)
                 await confirm.remove_reaction(deny_emoji, self.bot.user)
-                await message.channel.send(
+                await destination.send(
                     embed=discord.Embed(
                         title="Cancelled", description="Timed out", color=self.bot.error_color
                     )
@@ -1201,13 +1257,13 @@ class ThreadManager:
                 del self.cache[recipient.id]
                 return thread
             else:
-                if r.emoji == deny_emoji:
+                if str(r.emoji) == deny_emoji:
                     thread.cancelled = True
 
                     await confirm.remove_reaction(accept_emoji, self.bot.user)
                     await asyncio.sleep(0.2)
                     await confirm.remove_reaction(deny_emoji, self.bot.user)
-                    await message.channel.send(
+                    await destination.send(
                         embed=discord.Embed(title="Cancelled", color=self.bot.error_color)
                     )
                     del self.cache[recipient.id]

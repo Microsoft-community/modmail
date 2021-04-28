@@ -3,7 +3,6 @@ import inspect
 import os
 import random
 import re
-from sys import stdout
 import traceback
 from contextlib import redirect_stdout
 from datetime import datetime
@@ -441,7 +440,7 @@ class Utility(commands.Cog):
     async def debug_hastebin(self, ctx):
         """Posts application-logs to Hastebin."""
 
-        haste_url = os.environ.get("HASTE_URL", "https://hasteb.in")
+        haste_url = os.environ.get("HASTE_URL", "https://hastebin.cc")
         log_file_name = self.bot.token.split(".")[0]
 
         with open(
@@ -506,9 +505,13 @@ class Utility(commands.Cog):
             - `streaming`
             - `listening`
             - `watching`
+            - `competing`
 
         When activity type is set to `listening`,
         it must be followed by a "to": "listening to..."
+
+        When activity type is set to `competing`,
+        it must be followed by a "in": "competing in..."
 
         When activity type is set to `streaming`, you can set
         the linked twitch page:
@@ -544,6 +547,8 @@ class Utility(commands.Cog):
         msg = f"Activity set to: {activity.type.name.capitalize()} "
         if activity.type == ActivityType.listening:
             msg += f"to {activity.name}."
+        elif activity.type == ActivityType.competing:
+            msg += f"in {activity.name}."
         else:
             msg += f"{activity.name}."
 
@@ -608,6 +613,11 @@ class Utility(commands.Cog):
                 # The actual message is after listening to [...]
                 # discord automatically add the "to"
                 activity_message = activity_message[3:].strip()
+        elif activity_type == ActivityType.competing:
+            if activity_message.lower().startswith("in "):
+                # The actual message is after listening to [...]
+                # discord automatically add the "in"
+                activity_message = activity_message[3:].strip()
         elif activity_type == ActivityType.streaming:
             url = self.bot.config["twitch_url"]
 
@@ -663,21 +673,60 @@ class Utility(commands.Cog):
 
     @commands.command()
     @checks.has_permissions(PermissionLevel.ADMINISTRATOR)
-    async def mention(self, ctx, *mention: Union[discord.Role, discord.Member]):
+    async def mention(self, ctx, *user_or_role: Union[discord.Role, discord.Member, str]):
         """
         Change what the bot mentions at the start of each thread.
 
-        Type only `{prefix}mention` to retrieve your current "mention" message.
-        """
-        # TODO: ability to disable mention.
-        current = self.bot.config["mention"]
+        `user_or_role` may be a user ID, mention, name, role ID, mention, or name.
+        You can also set it to mention multiple users or roles, just separate the arguments with space.
 
-        if not mention:
+        Examples:
+        - `{prefix}mention @user`
+        - `{prefix}mention @user @role`
+        - `{prefix}mention 984301093849028 388218663326449`
+        - `{prefix}mention everyone`
+
+        Do not ping `@everyone` to set mention to everyone, use "everyone" or "all" instead.
+
+        Notes:
+        - Type only `{prefix}mention` to retrieve your current "mention" message.
+        - `{prefix}mention disable` to disable mention.
+        - `{prefix}mention reset` to reset it to default value, which is "@here".
+        """
+        current = self.bot.config["mention"]
+        if not user_or_role:
             embed = discord.Embed(
                 title="Current mention:", color=self.bot.main_color, description=str(current)
             )
+        elif (
+            len(user_or_role) == 1
+            and isinstance(user_or_role[0], str)
+            and user_or_role[0].lower() in ("disable", "reset")
+        ):
+            option = user_or_role[0].lower()
+            if option == "disable":
+                embed = discord.Embed(
+                    description=f"Disabled mention on thread creation.", color=self.bot.main_color,
+                )
+                self.bot.config["mention"] = None
+            else:
+                embed = discord.Embed(
+                    description="`mention` is reset to default.", color=self.bot.main_color,
+                )
+                self.bot.config.remove("mention")
+            await self.bot.config.update()
         else:
-            mention = " ".join(i.mention for i in mention)
+            mention = []
+            everyone = ("all", "everyone")
+            for m in user_or_role:
+                if not isinstance(m, (discord.Role, discord.Member)) and m not in everyone:
+                    raise commands.BadArgument(f'Role or Member "{m}" not found.')
+                elif m == ctx.guild.default_role or m in everyone:
+                    mention.append("@everyone")
+                    continue
+                mention.append(m.mention)
+
+            mention = " ".join(mention)
             embed = discord.Embed(
                 title="Changed mention!",
                 description=f'On thread creation the bot now says "{mention}".',
@@ -1442,15 +1491,15 @@ class Utility(commands.Cog):
                 if perm == -1:
                     values.insert(0, "**everyone**")
                     continue
-                member = ctx.guild.get_member(perm)
+                member = ctx.guild.get_member(int(perm))
                 if member is not None:
                     values.append(member.mention)
                     continue
-                user = self.bot.get_user(perm)
+                user = self.bot.get_user(int(perm))
                 if user is not None:
                     values.append(user.mention)
                     continue
-                role = ctx.guild.get_role(perm)
+                role = ctx.guild.get_role(int(perm))
                 if role is not None:
                     values.append(role.mention)
                 else:
@@ -1726,14 +1775,30 @@ class Utility(commands.Cog):
                 description=f"Another autotrigger with the same name already exists: `{keyword}`.",
             )
         else:
-            self.bot.auto_triggers[keyword] = command
-            await self.bot.config.update()
+            # command validation
+            valid = False
+            split_cmd = command.split(" ")
+            for n in range(1, len(split_cmd) + 1):
+                if self.bot.get_command(" ".join(split_cmd[0:n])):
+                    print(self.bot.get_command(" ".join(split_cmd[0:n])))
+                    valid = True
+                    break
 
-            embed = discord.Embed(
-                title="Success",
-                color=self.bot.main_color,
-                description=f"Keyword `{keyword}` has been linked to `{command}`.",
-            )
+            if valid:
+                self.bot.auto_triggers[keyword] = command
+                await self.bot.config.update()
+
+                embed = discord.Embed(
+                    title="Success",
+                    color=self.bot.main_color,
+                    description=f"Keyword `{keyword}` has been linked to `{command}`.",
+                )
+            else:
+                embed = discord.Embed(
+                    title="Error",
+                    color=self.bot.error_color,
+                    description="Invalid command. Note that autotriggers do not work with aliases.",
+                )
 
         await ctx.send(embed=embed)
 
@@ -1746,14 +1811,29 @@ class Utility(commands.Cog):
                 keyword, self.bot.auto_triggers.keys(), "Autotrigger"
             )
         else:
-            self.bot.auto_triggers[keyword] = command
-            await self.bot.config.update()
+            # command validation
+            valid = False
+            split_cmd = command.split(" ")
+            for n in range(1, len(split_cmd) + 1):
+                if self.bot.get_command(" ".join(split_cmd[0:n])):
+                    valid = True
+                    break
 
-            embed = discord.Embed(
-                title="Success",
-                color=self.bot.main_color,
-                description=f"Keyword `{keyword}` has been linked to `{command}`.",
-            )
+            if valid:
+                self.bot.auto_triggers[keyword] = command
+                await self.bot.config.update()
+
+                embed = discord.Embed(
+                    title="Success",
+                    color=self.bot.main_color,
+                    description=f"Keyword `{keyword}` has been linked to `{command}`.",
+                )
+            else:
+                embed = discord.Embed(
+                    title="Error",
+                    color=self.bot.error_color,
+                    description="Invalid command. Note that autotriggers do not work with aliases.",
+                )
 
         await ctx.send(embed=embed)
 
@@ -1786,7 +1866,7 @@ class Utility(commands.Cog):
         """Tests a string against the current autotrigger setup"""
         for keyword in self.bot.auto_triggers:
             if self.bot.config.get("use_regex_autotrigger"):
-                check = re.match(keyword, text)
+                check = re.search(keyword, text)
                 regex = True
             else:
                 check = keyword.lower() in text.lower()
@@ -1853,6 +1933,7 @@ class Utility(commands.Cog):
     @commands.command()
     @checks.has_permissions(PermissionLevel.OWNER)
     @checks.github_token_required(ignore_if_not_heroku=True)
+    @checks.updates_enabled()
     @trigger_typing
     async def update(self, ctx, *, flag: str = ""):
         """

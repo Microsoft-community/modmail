@@ -14,7 +14,7 @@ from discord.ext.commands import BadArgument
 from core._color_data import ALL_COLORS
 from core.models import DMDisabled, InvalidConfigError, Default, getLogger
 from core.time import UserFriendlyTimeSync
-from core.utils import strtobool, tryint
+from core.utils import strtobool
 
 logger = getLogger(__name__)
 load_dotenv()
@@ -44,10 +44,13 @@ class ConfigManager:
         "log_channel_id": None,
         "mention_channel_id": None,
         "update_channel_id": None,
+        # updates
+        "update_notifications": True,
         # threads
-        "sent_emoji": "✅",
-        "blocked_emoji": "🚫",
-        "close_emoji": "🔒",
+        "sent_emoji": "\N{WHITE HEAVY CHECK MARK}",
+        "blocked_emoji": "\N{NO ENTRY SIGN}",
+        "close_emoji": "\N{LOCK}",
+        "use_user_id_channel_name": False,
         "recipient_thread_close": False,
         "thread_auto_close_silently": False,
         "thread_auto_close": isodate.Duration(),
@@ -77,7 +80,9 @@ class ConfigManager:
         "close_on_leave": False,
         "close_on_leave_reason": "The recipient has left the server.",
         "alert_on_mention": False,
+        "silent_alert_on_mention": False,
         "show_timestamp": True,
+        "anonymous_snippets": False,
         # moderation
         "recipient_color": str(discord.Color.gold()),
         "mod_color": str(discord.Color.green()),
@@ -88,13 +93,13 @@ class ConfigManager:
         "anon_tag": "Response",
         # react to contact
         "react_to_contact_message": None,
-        "react_to_contact_emoji": "\u2705",
+        "react_to_contact_emoji": "\N{WHITE HEAVY CHECK MARK}",
         # confirm thread creation
         "confirm_thread_creation": False,
         "confirm_thread_creation_title": "Confirm thread creation",
         "confirm_thread_response": "React to confirm thread creation which will directly contact the moderators",
-        "confirm_thread_creation_accept": "\u2705",
-        "confirm_thread_creation_deny": "\U0001F6AB",
+        "confirm_thread_creation_accept": "\N{WHITE HEAVY CHECK MARK}",
+        "confirm_thread_creation_deny": "\N{NO ENTRY SIGN}",
         # regex
         "use_regex_autotrigger": False,
     }
@@ -141,6 +146,7 @@ class ConfigManager:
         # github access token for private repositories
         "github_token": None,
         "disable_autoupdates": False,
+        "disable_updates": False,
         # Logging
         "log_level": "INFO",
         # data collection
@@ -152,6 +158,7 @@ class ConfigManager:
     time_deltas = {"account_age", "guild_age", "thread_auto_close", "thread_cooldown"}
 
     booleans = {
+        "use_user_id_channel_name",
         "user_typing",
         "mod_typing",
         "reply_without_command",
@@ -164,6 +171,7 @@ class ConfigManager:
         "transfer_reactions",
         "close_on_leave",
         "alert_on_mention",
+        "silent_alert_on_mention",
         "show_timestamp",
         "confirm_thread_creation",
         "use_regex_autotrigger",
@@ -171,7 +179,10 @@ class ConfigManager:
         "data_collection",
         "enable_eval",
         "disable_autoupdates",
+        "disable_updates",
+        "update_notifications",
         "thread_contact_silently",
+        "anonymous_snippets",
     }
 
     enums = {

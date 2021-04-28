@@ -6,6 +6,149 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 This project mostly adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html);
 however, insignificant breaking changes do not guarantee a major version bump, see the reasoning [here](https://github.com/kyb3r/modmail/issues/319). If you're a plugin developer, note the "BREAKING" section.
 
+# v3.9.4
+
+## Fixed
+
+- Certain cases where fallback categories were not working as intended. ([GH #3002](https://github.com/kyb3r/modmail/issues/3002), [PR #3003](https://github.com/kyb3r/modmail/pull/3003))
+- There is now a proper message when trying to contact a bot.
+
+## Improved
+
+- `?mention` can now be disabled with `?mention disable`. ([PR #2993](https://github.com/kyb3r/modmail/pull/2993/files))
+- `?mention` now allows vague entries such as `everyone` or `all`. ([PR #2993](https://github.com/kyb3r/modmail/pull/2993/files))
+
+## Internal
+
+- Change heroku python version to 3.9.4 ([PR #3001](https://github.com/kyb3r/modmail/pull/3001))
+
+# v3.9.3
+
+## Added
+
+- New config: `use_user_id_channel_name`, when set to TRUE, channel names would get created with the recipient's ID instead of their name and discriminator.
+  - This is now an option to better suit the needs of servers in Server Discovery
+
+## Internal
+
+- Signature of `format_channel_name` in core/util.py changed to:
+  - `format_channel_name(bot, author, exclude_channel=None, force_null=False)`
+
+
+# v3.9.2
+
+### Improved
+
+- Additional HostingMethods (i.e. DOCKER, PM2, SCREEN). Autoupdates are now disabled on all docker instances. ([GH #2977](https://github.com/kyb3r/modmail/issues/2977), [PR #2988](https://github.com/kyb3r/modmail/pull/2988))
+
+### Fixed
+
+- `user_typing` default in the config help is now correct.
+
+# v3.9.1
+
+### Internal
+
+- `bot.run` now more gracefully handles closing, similar to how discord.py handles it.
+  - No longer displays `PrivilegedIntentsRequired` exception when exiting when presence intent is disabled.
+
+# v3.9.0
+
+### Breaking
+
+- `on_thread_initiate` and `on_thread_ready` events now have `thread, creator, category, initial_message` as additional arguments.
+
+### Fixed
+
+- `confirm_thread_creation` now properly works when a user opens a thread using react to contact. ([GH #2930](https://github.com/kyb3r/modmail/issues/2930), [PR #2971](https://github.com/kyb3r/modmail/pull/2971))
+- `?disable all/new` now disables react to contact threads. ([GH #2969](https://github.com/kyb3r/modmail/issues/2969), [PR #2971](https://github.com/kyb3r/modmail/pull/2971))
+- Ghost errors are no longer raised when threads are created using non-organic methods.
+
+### Internal
+
+- `thread.reply` now returns (msg_to_user, msg_to_thread). Can be useful in plugins.
+
+# v3.8.6
+
+### Added
+
+- Ability to install local plugins without relying on git / external sources
+  - Simply add your extension to plugins/@local, and use `?plugin add local/plugin-name` to load the plugin as normal
+- Updated deps for requirements.min.txt and pyproject.toml
+
+# v3.8.5
+
+### Added
+
+- `?msglink <message id>`, allows you to obtain channel + message ID for T&S reports. ([GH #2963](https://github.com/kyb3r/modmail/issues/2963), [PR #2964](https://github.com/kyb3r/modmail/pull/2964))
+- `?mention disable/reset`, disables or resets mention on thread creation. ([PR #2951](https://github.com/kyb3r/modmail/pull/2951))
+
+### Fixed
+
+- Non-master/development branch deployments no longer cause errors to be raised.
+- Autotriggers now can search for roles/channels in guild context. ([GH #2961](https://github.com/kyb3r/modmail/issues/2961))
+
+# v3.8.4
+
+This update is a quick hotfix for a weird behaviour experienced on 1 Feb 2021 where users were not properly cached.
+
+### Fixed
+
+- Corrupted data is no longer saved to thread cache.
+
+# v3.8.2
+
+### Fixed
+
+- Retry with `null-discrim` if channel could not be created. ([GH #2934](https://github.com/kyb3r/modmail/issues/2934))
+- Fix update notifications.
+- Retrieve user from Discord API if user has left the server, resolving issues in `?block`. ([GH #2935](https://github.com/kyb3r/modmail/issues/2935), [PR #2936](https://github.com/kyb3r/modmail/pull/2936))
+- IDs in `<member>` commands work now.
+
+# v3.8.1
+
+### Fixed
+
+- Additional image uploads now render properly. ([PR #2933](https://github.com/kyb3r/modmail/pull/2933))
+- `confirm_thread_creation` no longer raises unnecessary errors. ([GH #2931](https://github.com/kyb3r/modmail/issues/2931), [PR #2933](https://github.com/kyb3r/modmail/pull/2933))
+- Autotriggers no longer sends attachments back. ([GH #2932](https://github.com/kyb3r/modmail/issues/2932))
+
+# v3.8.0
+
+### Added
+
+- `update_notifications` configuration option to toggle bot autoupdate notifications. ([GH #2896](https://github.com/kyb3r/modmail/issues/2896))
+- `?fareply`, anonymously reply with variables.
+- `anonymous_snippets` config variable to toggle if snippets should be anonymous. ([GH #2905](https://github.com/kyb3r/modmail/issues/2905))
+- `disable_updates` config variable to control if the update command should be disabled or not.
+- `silent_alert_on_mention` to alert mods silently. ([GH #2907](https://github.com/kyb3r/modmail/issues/2907))
+- Support for only the "Server Members" intent.
+
+### Improved
+
+- Added command validation to `autotrigger add/edit`.
+- `GITHUB_TOKEN` is now no longer required in Heroku setups.
+- Clearer error messages on reply fails.
+
+### Fixed
+
+- Mentioned `competing` as an activity type. ([PR #2902](https://github.com/kyb3r/modmail/pull/2902))
+- Level permissions were not checked if command permissions were set.
+- Regex autotriggers were not working if term was in the middle of strings.
+- `?blocked` now no longers show blocks that have expired.
+- Blocked roles will no longer trigger an error during unblock.
+- Custom emojis are now supported in `confirm_thread_creation_deny`. ([GH #2916](https://github.com/kyb3r/modmail/issues/2916))
+- Finding linked messages in replies work now. ([GH #2920](https://github.com/kyb3r/modmail/issues/2920), [Jerrie-Aries](https://github.com/kyb3r/modmail/issues/2920#issuecomment-751530495))
+- Sending files in threads (non-images) now work. ([GH #2926](https://github.com/kyb3r/modmail/issues/2926))
+- Deleting messages no longer shows a false error. ([GH #2910](https://github.com/kyb3r/modmail/issues/2910), [Jerrie-Aries](https://github.com/kyb3r/modmail/issues/2910#issuecomment-753557313))
+- Display an error on [Lottie](https://airbnb.io/lottie/#/) stickers, instead of failing the send.
+- `?perms get` now shows role/user names. ([PR #2927](https://github.com/kyb3r/modmail/pull/2927))
+
+### Internal
+
+- Make use of `git branch --show-current` to retrieve branch instead of using prerelease version check.
+- Use discord.py 1.6.0 from PyPi instead of the development clone.
+
 # v3.7.13
 
 ### Fixed

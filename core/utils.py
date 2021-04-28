@@ -30,6 +30,7 @@ __all__ = [
     "escape_code_block",
     "format_channel_name",
     "tryint",
+    "match_title",
 ]
 
 
@@ -47,7 +48,7 @@ def strtobool(val):
         raise
 
 
-class User(commands.IDConverter):
+class User(commands.MemberConverter):
     """
     A custom discord.py `Converter` that
     supports `Member`, `User`, and string ID's.
@@ -222,7 +223,7 @@ TOPIC_UID_REGEX = re.compile(r"\bUser ID:\s*(\d{17,21})\b", flags=re.IGNORECASE)
 
 def match_title(text: str) -> int:
     """
-    Matches a title in the foramt of "Title: XXXX"
+    Matches a title in the format of "Title: XXXX"
 
     Parameters
     ----------
@@ -339,12 +340,24 @@ def escape_code_block(text):
     return re.sub(r"```", "`\u200b``", text)
 
 
-def format_channel_name(author, guild, exclude_channel=None):
+def format_channel_name(bot, author, exclude_channel=None, force_null=False):
     """Sanitises a username for use with text channel names"""
-    name = author.name.lower()
-    name = new_name = (
-        "".join(l for l in name if l not in string.punctuation and l.isprintable()) or "null"
-    ) + f"-{author.discriminator}"
+    guild = bot.modmail_guild
+
+    if force_null:
+        name = new_name = "null"
+    else:
+        if bot.config["use_user_id_channel_name"]:
+            name = new_name = str(author.id)
+        else:
+            name = author.name.lower()
+            if force_null:
+                name = "null"
+
+            name = new_name = (
+                "".join(l for l in name if l not in string.punctuation and l.isprintable())
+                or "null"
+            ) + f"-{author.discriminator}"
 
     counter = 1
     existed = set(c.name for c in guild.text_channels if c != exclude_channel)
