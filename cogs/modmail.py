@@ -692,7 +692,7 @@ class Modmail(commands.Cog):
         `user` may be a user ID, mention, or name.
         """
 
-        await ctx.trigger_typing()
+#        await ctx.trigger_typing()
 
         if not user:
             thread = ctx.thread
@@ -802,7 +802,7 @@ class Modmail(commands.Cog):
         Provide a `limit` to specify the maximum number of logs the bot should find.
         """
 
-        await ctx.trigger_typing()
+#        await ctx.trigger_typing()
 
         entries = await self.bot.api.search_by_text(query, limit)
 
@@ -1068,7 +1068,7 @@ class Modmail(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     @checks.has_permissions(PermissionLevel.MODERATOR)
-    @trigger_typing
+#    @trigger_typing
     async def blocked(self, ctx):
         """Retrieve a list of blocked users."""
 
