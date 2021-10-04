@@ -1215,8 +1215,8 @@ class ModmailBot(commands.Bot):
 
             thread = await self.threads.find(recipient=user)
 
- #           if thread:
- #               await thread.channel.trigger_typing()
+            if thread:
+                await thread.channel.trigger_typing()
         else:
             if not self.config.get("mod_typing"):
                 return
@@ -1225,7 +1225,7 @@ class ModmailBot(commands.Bot):
             if thread is not None and thread.recipient:
                 if await self.is_blocked(thread.recipient):
                     return
-#                await thread.recipient.trigger_typing()
+                await thread.recipient.trigger_typing()
 
     async def handle_reaction_events(self, payload):
         user = self.get_user(payload.user_id)
@@ -1506,7 +1506,7 @@ class ModmailBot(commands.Bot):
 
     async def on_command_error(self, context, exception):
         if isinstance(exception, commands.BadArgument):
-#            await context.trigger_typing()
+            await context.trigger_typing()
             await context.send(
                 embed=discord.Embed(color=self.error_color, description=str(exception))
             )
