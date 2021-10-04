@@ -1006,11 +1006,11 @@ class Thread:
         ):
             logger.info("Sending a message to %s when DM disabled is set.", self.recipient)
 
-        try:
-            await destination.trigger_typing()
-        except discord.NotFound:
-            logger.warning("Channel not found.")
-            raise
+        #try:
+        #    await destination.trigger_typing()
+        #except discord.NotFound:
+        #    logger.warning("Channel not found.")
+        #    raise
 
         if not from_mod and not note:
             mentions = self.get_notifications()
