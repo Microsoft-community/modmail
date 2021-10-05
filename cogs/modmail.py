@@ -64,7 +64,8 @@ class Modmail(commands.Cog):
         for level in PermissionLevel:
             if level <= PermissionLevel.REGULAR:
                 continue
-            permissions = self.bot.config["level_permissions"].get(level.name, [])
+            permissions = self.bot.config["level_permissions"].get(
+                level.name, [])
             for perm in permissions:
                 perm = int(perm)
                 if perm == -1:
@@ -74,8 +75,10 @@ class Modmail(commands.Cog):
                     if key is None:
                         key = self.bot.modmail_guild.get_role(perm)
                 if key is not None:
-                    logger.info("Granting %s access to Modmail category.", key.name)
-                    overwrites[key] = discord.PermissionOverwrite(read_messages=True)
+                    logger.info(
+                        "Granting %s access to Modmail category.", key.name)
+                    overwrites[key] = discord.PermissionOverwrite(
+                        read_messages=True)
 
         category = await self.bot.modmail_guild.create_category(name="Modmail", overwrites=overwrites)
 
@@ -98,7 +101,8 @@ class Modmail(commands.Cog):
             "feeling extra generous, buy us coffee on [Patreon](https://patreon.com/kyber) :heart:!",
         )
 
-        embed.set_footer(text=f'Type "{self.bot.prefix}help" for a complete list of commands.')
+        embed.set_footer(
+            text=f'Type "{self.bot.prefix}help" for a complete list of commands.')
         await log_channel.send(embed=embed)
 
         self.bot.config["main_category_id"] = category.id
@@ -146,7 +150,8 @@ class Modmail(commands.Cog):
         if name is not None:
             val = self.bot.snippets.get(name)
             if val is None:
-                embed = create_not_found_embed(name, self.bot.snippets.keys(), "Snippet")
+                embed = create_not_found_embed(
+                    name, self.bot.snippets.keys(), "Snippet")
             else:
                 embed = discord.Embed(
                     title=f'Snippet - "{name}":', description=val, color=self.bot.main_color
@@ -157,7 +162,8 @@ class Modmail(commands.Cog):
             embed = discord.Embed(
                 color=self.bot.error_color, description="You dont have any snippets at the moment."
             )
-            embed.set_footer(text=f'Check "{self.bot.prefix}help snippet add" to add a snippet.')
+            embed.set_footer(
+                text=f'Check "{self.bot.prefix}help snippet add" to add a snippet.')
             embed.set_author(name="Snippets", icon_url=ctx.guild.icon_url)
             return await ctx.send(embed=embed)
 
@@ -165,7 +171,8 @@ class Modmail(commands.Cog):
 
         for i, names in enumerate(zip_longest(*(iter(sorted(self.bot.snippets)),) * 15)):
             description = format_description(i, names)
-            embed = discord.Embed(color=self.bot.main_color, description=description)
+            embed = discord.Embed(
+                color=self.bot.main_color, description=description)
             embed.set_author(name="Snippets", icon_url=ctx.guild.icon_url)
             embeds.append(embed)
 
@@ -180,7 +187,8 @@ class Modmail(commands.Cog):
         """
         val = self.bot.snippets.get(name)
         if val is None:
-            embed = create_not_found_embed(name, self.bot.snippets.keys(), "Snippet")
+            embed = create_not_found_embed(
+                name, self.bot.snippets.keys(), "Snippet")
         else:
             val = truncate(escape_code_block(val), 2048 - 7)
             embed = discord.Embed(
@@ -261,7 +269,8 @@ class Modmail(commands.Cog):
             self.bot.snippets.pop(name)
             await self.bot.config.update()
         else:
-            embed = create_not_found_embed(name, self.bot.snippets.keys(), "Snippet")
+            embed = create_not_found_embed(
+                name, self.bot.snippets.keys(), "Snippet")
         await ctx.send(embed=embed)
 
     @snippet.command(name="edit")
@@ -284,7 +293,8 @@ class Modmail(commands.Cog):
                 description=f'`{name}` will now send "{value}".',
             )
         else:
-            embed = create_not_found_embed(name, self.bot.snippets.keys(), "Snippet")
+            embed = create_not_found_embed(
+                name, self.bot.snippets.keys(), "Snippet")
         await ctx.send(embed=embed)
 
     @commands.command(usage="<category> [options]")
@@ -366,7 +376,8 @@ class Modmail(commands.Cog):
         if after.arg and not silent:
             embed.add_field(name="Message", value=after.arg)
 
-        embed.set_footer(text="Closing will be cancelled if a thread message is sent.")
+        embed.set_footer(
+            text="Closing will be cancelled if a thread message is sent.")
         embed.timestamp = after.dt
 
         await ctx.send(embed=embed)
@@ -449,7 +460,8 @@ class Modmail(commands.Cog):
         """
         mention = self.parse_user_or_role(ctx, user_or_role)
         if mention is None:
-            raise commands.BadArgument(f"{user_or_role} is not a valid user or role.")
+            raise commands.BadArgument(
+                f"{user_or_role} is not a valid user or role.")
 
         thread = ctx.thread
 
@@ -522,7 +534,8 @@ class Modmail(commands.Cog):
         """
         mention = self.parse_user_or_role(ctx, user_or_role)
         if mention is None:
-            raise commands.BadArgument(f"{user_or_role} is not a valid user or role.")
+            raise commands.BadArgument(
+                f"{user_or_role} is not a valid user or role.")
 
         thread = ctx.thread
 
@@ -611,7 +624,8 @@ class Modmail(commands.Cog):
                 color=self.bot.error_color, description="Message not found or no longer exists."
             )
         else:
-            embed = discord.Embed(color=self.bot.main_color, description=message.jump_url)
+            embed = discord.Embed(color=self.bot.main_color,
+                                  description=message.jump_url)
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -640,10 +654,13 @@ class Modmail(commands.Cog):
             username = entry["recipient"]["name"] + "#"
             username += entry["recipient"]["discriminator"]
 
-            embed = discord.Embed(color=self.bot.main_color, timestamp=created_at)
-            embed.set_author(name=f"{title} - {username}", icon_url=avatar_url, url=log_url)
+            embed = discord.Embed(
+                color=self.bot.main_color, timestamp=created_at)
+            embed.set_author(name=f"{title} - {username}",
+                             icon_url=avatar_url, url=log_url)
             embed.url = log_url
-            embed.add_field(name="Created", value=duration(created_at, now=datetime.utcnow()))
+            embed.add_field(name="Created", value=duration(
+                created_at, now=datetime.utcnow()))
             closer = entry.get("closer")
             if closer is None:
                 closer_msg = "Unknown"
@@ -652,9 +669,11 @@ class Modmail(commands.Cog):
             embed.add_field(name="Closed By", value=closer_msg)
 
             if entry["recipient"]["id"] != entry["creator"]["id"]:
-                embed.add_field(name="Created by", value=f"<@{entry['creator']['id']}>")
+                embed.add_field(name="Created by",
+                                value=f"<@{entry['creator']['id']}>")
 
-            embed.add_field(name="Preview", value=format_preview(entry["messages"]), inline=False)
+            embed.add_field(name="Preview", value=format_preview(
+                entry["messages"]), inline=False)
 
             if closer is not None:
                 # BUG: Currently, logviewer can't display logs without a closer.
@@ -663,7 +682,8 @@ class Modmail(commands.Cog):
                 logger.debug("Invalid log entry: no closer.")
                 embed.add_field(name="Log Key", value=f"`{entry['key']}`")
 
-            embed.set_footer(text="Recipient ID: " + str(entry["recipient"]["id"]))
+            embed.set_footer(text="Recipient ID: " +
+                             str(entry["recipient"]["id"]))
             embeds.append(embed)
         return embeds
 
@@ -918,7 +938,8 @@ class Modmail(commands.Cog):
 
             tag = self.bot.config["mod_tag"]
             if tag is None:
-                tag = str(get_top_role(ctx.author, self.bot.config["use_hoisted_top_role"]))
+                tag = str(get_top_role(
+                    ctx.author, self.bot.config["use_hoisted_top_role"]))
             name = self.bot.config["anon_username"]
             if name is None:
                 name = tag
@@ -1003,7 +1024,8 @@ class Modmail(commands.Cog):
 
             tag = self.bot.config["mod_tag"]
             if tag is None:
-                tag = str(get_top_role(ctx.author, self.bot.config["use_hoisted_top_role"]))
+                tag = str(get_top_role(
+                    ctx.author, self.bot.config["use_hoisted_top_role"]))
             name = self.bot.config["anon_username"]
             if name is None:
                 name = tag
@@ -1052,7 +1074,8 @@ class Modmail(commands.Cog):
         if not user:
             thread = ctx.thread
             if not thread:
-                raise commands.MissingRequiredArgument(SimpleNamespace(name="member"))
+                raise commands.MissingRequiredArgument(
+                    SimpleNamespace(name="member"))
             user = thread.recipient or await self.bot.fetch_user(thread.id)
 
         default_avatar = "https://cdn.discordapp.com/embed/avatars/0.png"
@@ -1086,7 +1109,8 @@ class Modmail(commands.Cog):
         user = user if user is not None else ctx.author
 
         entries = await self.bot.api.search_closed_by(user.id)
-        embeds = self.format_log_embeds(entries, avatar_url=self.bot.guild.icon_url)
+        embeds = self.format_log_embeds(
+            entries, avatar_url=self.bot.guild.icon_url)
 
         if not embeds:
             embed = discord.Embed(
@@ -1136,7 +1160,8 @@ class Modmail(commands.Cog):
 
         entries = await self.bot.api.get_responded_logs(user.id)
 
-        embeds = self.format_log_embeds(entries, avatar_url=self.bot.guild.icon_url)
+        embeds = self.format_log_embeds(
+            entries, avatar_url=self.bot.guild.icon_url)
 
         if not embeds:
             embed = discord.Embed(
@@ -1161,7 +1186,8 @@ class Modmail(commands.Cog):
 
         entries = await self.bot.api.search_by_text(query, limit)
 
-        embeds = self.format_log_embeds(entries, avatar_url=self.bot.guild.icon_url)
+        embeds = self.format_log_embeds(
+            entries, avatar_url=self.bot.guild.icon_url)
 
         if not embeds:
             embed = discord.Embed(
@@ -1394,7 +1420,8 @@ class Modmail(commands.Cog):
                 users.remove(u)
             elif await self.bot.is_blocked(u):
                 ref = f"{u.mention} is" if ctx.author != u else "You are"
-                errors.append(f"{ref} currently blocked from contacting {self.bot.user.name}.")
+                errors.append(
+                    f"{ref} currently blocked from contacting {self.bot.user.name}.")
                 users.remove(u)
 
         if len(users) > 5:
@@ -1409,7 +1436,8 @@ class Modmail(commands.Cog):
                 title = None
 
             if manual_trigger:  # not react to contact
-                embed = discord.Embed(title=title, color=self.bot.error_color, description="\n".join(errors))
+                embed = discord.Embed(
+                    title=title, color=self.bot.error_color, description="\n".join(errors))
                 await ctx.send(embed=embed, delete_after=10)
 
             if not users:
@@ -1429,7 +1457,8 @@ class Modmail(commands.Cog):
             return
 
         if self.bot.config["dm_disabled"] in (DMDisabled.NEW_THREADS, DMDisabled.ALL_THREADS):
-            logger.info("Contacting user %s when Modmail DM is disabled.", users[0])
+            logger.info(
+                "Contacting user %s when Modmail DM is disabled.", users[0])
 
         if not silent and not self.bot.config.get("thread_contact_silently"):
             if creator.id == users[0].id:
@@ -1475,7 +1504,8 @@ class Modmail(commands.Cog):
     async def blocked(self, ctx):
         """Retrieve a list of blocked users."""
 
-        embeds = [discord.Embed(title="Blocked Users", color=self.bot.main_color, description="")]
+        embeds = [discord.Embed(title="Blocked Users",
+                                color=self.bot.main_color, description="")]
 
         roles = []
         users = []
@@ -1496,7 +1526,8 @@ class Modmail(commands.Cog):
                     )
 
             if end_time is not None:
-                after = (datetime.fromisoformat(end_time.group(1)) - now).total_seconds()
+                after = (datetime.fromisoformat(
+                    end_time.group(1)) - now).total_seconds()
                 if after <= 0:
                     # No longer blocked
                     self.bot.blocked_users.pop(str(id_))
@@ -1528,7 +1559,8 @@ class Modmail(commands.Cog):
                     )
 
             if end_time is not None:
-                after = (datetime.fromisoformat(end_time.group(1)) - now).total_seconds()
+                after = (datetime.fromisoformat(
+                    end_time.group(1)) - now).total_seconds()
                 if after <= 0:
                     # No longer blocked
                     self.bot.blocked_roles.pop(str(id_))
@@ -1556,7 +1588,8 @@ class Modmail(commands.Cog):
         else:
             embeds[0].description = "Currently there are no blocked users."
 
-        embeds.append(discord.Embed(title="Blocked Roles", color=self.bot.main_color, description=""))
+        embeds.append(discord.Embed(title="Blocked Roles",
+                      color=self.bot.main_color, description=""))
 
         if roles:
             embed = embeds[-1]
@@ -1660,9 +1693,11 @@ class Modmail(commands.Cog):
             if thread:
                 user_or_role = thread.recipient
             elif after is None:
-                raise commands.MissingRequiredArgument(SimpleNamespace(name="user or role"))
+                raise commands.MissingRequiredArgument(
+                    SimpleNamespace(name="user or role"))
             else:
-                raise commands.BadArgument(f'User or role "{after.arg}" not found.')
+                raise commands.BadArgument(
+                    f'User or role "{after.arg}" not found.')
 
         mention = getattr(user_or_role, "mention", f"`{user_or_role.id}`")
 
@@ -1681,7 +1716,8 @@ class Modmail(commands.Cog):
 
         if after is not None:
             if "%" in reason:
-                raise commands.BadArgument('The reason contains illegal character "%".')
+                raise commands.BadArgument(
+                    'The reason contains illegal character "%".')
             if after.arg:
                 reason += f" for `{after.arg}`"
             if after.dt > after.now:
@@ -1737,7 +1773,8 @@ class Modmail(commands.Cog):
             if thread:
                 user_or_role = thread.recipient
             else:
-                raise commands.MissingRequiredArgument(SimpleNamespace(name="user"))
+                raise commands.MissingRequiredArgument(
+                    SimpleNamespace(name="user"))
 
         mention = getattr(user_or_role, "mention", f"`{user_or_role.id}`")
         name = getattr(user_or_role, "name", f"`{user_or_role.id}`")
@@ -1831,7 +1868,8 @@ class Modmail(commands.Cog):
 
         # Search cache for channel
         user_id, thread = next(
-            ((k, v) for k, v in self.bot.threads.cache.items() if v.channel == ctx.channel),
+            ((k, v) for k, v in self.bot.threads.cache.items()
+             if v.channel == ctx.channel),
             (-1, None),
         )
         if thread is not None:
@@ -1864,7 +1902,8 @@ class Modmail(commands.Cog):
                             self.bot.threads, recipient, ctx.channel, other_recipients
                         )
                     thread.ready = True
-                    logger.info("Setting current channel's topic to User ID and created new thread.")
+                    logger.info(
+                        "Setting current channel's topic to User ID and created new thread.")
                     await ctx.channel.edit(reason="Fix broken Modmail thread", topic=f"User ID: {user_id}")
                     return await self.bot.add_reaction(ctx.message, sent_emoji)
 
@@ -1877,13 +1916,15 @@ class Modmail(commands.Cog):
         if m is not None:
             users = set(
                 filter(
-                    lambda member: member.name == m.group(1) and member.discriminator == m.group(2),
+                    lambda member: member.name == m.group(
+                        1) and member.discriminator == m.group(2),
                     ctx.guild.members,
                 )
             )
             if len(users) == 1:
                 user = users.pop()
-                name = self.bot.format_channel_name(user, exclude_channel=ctx.channel)
+                name = self.bot.format_channel_name(
+                    user, exclude_channel=ctx.channel)
                 recipient = self.bot.get_user(user.id)
                 if user.id in self.bot.threads.cache:
                     thread = self.bot.threads.cache[user.id]
@@ -1915,14 +1956,16 @@ class Modmail(commands.Cog):
                         self.bot.threads, recipient, ctx.channel, other_recipients
                     )
                 thread.ready = True
-                logger.info("Setting current channel's topic to User ID and created new thread.")
+                logger.info(
+                    "Setting current channel's topic to User ID and created new thread.")
                 await ctx.channel.edit(
                     reason="Fix broken Modmail thread", name=name, topic=f"User ID: {user.id}"
                 )
                 return await self.bot.add_reaction(ctx.message, sent_emoji)
 
             elif len(users) >= 2:
-                logger.info("Multiple users with the same name and discriminator.")
+                logger.info(
+                    "Multiple users with the same name and discriminator.")
         return await self.bot.add_reaction(ctx.message, blocked_emoji)
 
     @commands.command()
@@ -2024,66 +2067,80 @@ class Modmail(commands.Cog):
 
         return await ctx.send(embed=embed)
 
-    @commands.group(invoke_without_command = True)
+    @commands.group(name="raidmode", invoke_without_command=True)
     @checks.has_permissions(PermissionLevel.SUPPORTER)
-    async def raidmode(self, ctx):
+    async def raid_mode(self, ctx):
         """
-        Check if autoresponse is enabled.
+        Query or change the current raid mode status.
+        Raid mode makes it so that a moderator-defined message
+        is sent before the thread is created, and makes it so that
+        users have to confirm before a thread is created.
         """
 
         embed = None
 
         if self.bot.config["raid_mode"]:
             embed = discord.Embed(
-                title = "Raid Mode currently enabled",
-                color = self.bot.main_color
-            ).add_field(name = "Message to send:", value = self.bot.config["raid_mode_snippet"])
+                title="Raid Mode currently enabled",
+                color=self.bot.main_color
+            ).add_field(name="Message to send:", value=self.bot.config["raid_mode_snippet"])
         else:
             embed = discord.Embed(
-                title = "Raid Mode currently disabled",
-                color = self.bot.error_color,
-                description = "Snippet is not sent on thread creation."
+                title="Raid Mode currently disabled",
+                color=self.bot.error_color,
+                description="Message is not sent before thread creation."
             )
 
-        return await ctx.send(embed = embed)
+        return await ctx.send(embed=embed)
 
-    @raidmode.command(name = "set")
+    @raid_mode.command(name="enable", aliases=["on", "true", "t", "1"])
     @checks.has_permissions(PermissionLevel.MODERATOR)
-    async def set(self, ctx, enabled: bool, *, value: commands.clean_content = None):
+    async def raid_mode_enable(self, ctx, *, value: str = None):
         """
-        Enable/disable automatic messages for new threads during server raids
+        Enables raid mode with a message of your choice.
+        Allows snippets using the syntax `snippet{<snippetname>}`.
         """
 
-        embed = None
+        value = (self.bot.snippets.get(re.match(r"^snippet{([\w]+)}$", value).group(
+            1)) or value) or self.bot.config["raid_mode_default_snippet"]
 
-        if enabled is None:
-            raise commands.MissingRequiredArgument(SimpleNamespace(name = "enabled"))
-        
-        if enabled:
-            if value is None:
-                raise commands.MissingRequiredArgument(SimpleNamespace(name = "value"))
+        if value is None:
+            raise commands.MissingRequiredArgument(
+                SimpleNamespace(name="value"))
 
-            self.bot.config["raid_mode"] = True
-            self.bot.config["raid_mode_snippet"] = value
-            await self.bot.config.update()
+        self.bot.config["raid_mode"] = True
+        self.bot.config["raid_mode_snippet"] = value
+        self.bot.config["prev_confirm_thread_creation"] = self.bot.config["confirm_thread_creation"]
+        self.bot.config["confirm_thread_creation"] = True
+        await self.bot.config.update()
 
-            embed = discord.Embed(
-                title = "Raid Mode enabled",
-                color = self.bot.main_color
-            ).add_field(name = "Message to send:", value = value)
+        embed = discord.Embed(
+            title="Raid Mode enabled",
+            color=self.bot.main_color
+        ).add_field(name="Message to send:", value=value)
 
-        elif not enabled:
-            self.bot.config["raid_mode"] = False
-            self.bot.config["raid_mode_snippet"] = None
-            await self.bot.config.update()
+        return await ctx.send(embed=embed)
 
-            embed = discord.Embed(
-                title = "Raid Mode disabled",
-                color = self.bot.error_color,
-                description = "Snippet will no longer be sent on thread creation."
-            )
+    @raid_mode.command(name="disable", aliases=["off", "false", "f", "0"])
+    @checks.has_permissions(PermissionLevel.MODERATOR)
+    async def raid_mode_disable(self, ctx):
+        """
+        Disables raid mode and stops sending the defined message when a thread is created.
+        """
 
-        return await ctx.send(embed = embed)
+        self.bot.config["raid_mode"] = False
+        self.bot.config["raid_mode_snippet"] = None
+        self.bot.config["confirm_thread_creation"] = self.bot.config["prev_confirm_thread_creation"]
+        await self.bot.config.update()
+
+        embed = discord.Embed(
+            title="Raid Mode disabled",
+            color=self.bot.error_color,
+            description="Message will no longer be sent before thread creation."
+        )
+
+        return await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Modmail(bot))

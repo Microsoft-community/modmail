@@ -93,6 +93,7 @@ class ConfigManager:
         "anonymous_snippets": False,
         "raid_mode": False,
         "raid_mode_snippet": None,
+        "raid_mode_default_snippet": "Hi! We're aware of the ongoing raid. They'll all be banned shortly. Until then, please only continue for other matters. Thanks for your cooperation.",
         # group conversations
         "private_added_to_group_title": "New Thread (Group)",
         "private_added_to_group_response": "{moderator.name} has added you to a Modmail thread.",
@@ -119,6 +120,7 @@ class ConfigManager:
         "react_to_contact_emoji": "\N{WHITE HEAVY CHECK MARK}",
         # confirm thread creation
         "confirm_thread_creation": False,
+        "prev_confirm_thread_creation": False,
         "confirm_thread_creation_title": "Confirm thread creation",
         "confirm_thread_response": "React to confirm thread creation which will directly contact the moderators",
         "confirm_thread_creation_accept": "\N{WHITE HEAVY CHECK MARK}",
