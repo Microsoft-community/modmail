@@ -212,6 +212,7 @@ class Modmail(commands.Cog):
                 color=self.bot.error_color,
                 description=f"A command with the same name already exists: `{name}`.",
             )
+            return await ctx.send(embed=embed)
         elif name in self.bot.snippets:
             embed = discord.Embed(
                 title="Error",
@@ -813,6 +814,16 @@ class Modmail(commands.Cog):
                 ctx.command.reset_cooldown(ctx)
                 return
 
+        if not users:
+            em = discord.Embed(
+                title="Error",
+                description="No valid users to remove.",
+                color=self.bot.error_color,
+            )
+            await ctx.send(embed=em)
+            ctx.command.reset_cooldown(ctx)
+            return
+
         if not silent:
             description = self.bot.formatter.format(
                 self.bot.config["private_removed_from_group_response"], moderator=ctx.author
@@ -907,7 +918,7 @@ class Modmail(commands.Cog):
 
             tag = self.bot.config["mod_tag"]
             if tag is None:
-                tag = str(get_top_hoisted_role(ctx.author))
+                tag = str(get_top_role(ctx.author, self.bot.config["use_hoisted_top_role"]))
             name = self.bot.config["anon_username"]
             if name is None:
                 name = tag
@@ -992,7 +1003,7 @@ class Modmail(commands.Cog):
 
             tag = self.bot.config["mod_tag"]
             if tag is None:
-                tag = str(get_top_hoisted_role(ctx.author))
+                tag = str(get_top_role(ctx.author, self.bot.config["use_hoisted_top_role"]))
             name = self.bot.config["anon_username"]
             if name is None:
                 name = tag
