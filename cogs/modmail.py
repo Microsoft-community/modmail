@@ -2024,6 +2024,66 @@ class Modmail(commands.Cog):
 
         return await ctx.send(embed=embed)
 
+    @commands.group(invoke_without_command = True)
+    @checks.has_permissions(PermissionLevel.SUPPORTER)
+    async def raidmode(self, ctx):
+        """
+        Check if autoresponse is enabled.
+        """
+
+        embed = None
+
+        if self.bot.config["raid_mode"]:
+            embed = discord.Embed(
+                title = "Raid Mode currently enabled",
+                color = self.bot.main_color
+            ).add_field(name = "Message to send:", value = self.bot.config["raid_mode_snippet"])
+        else:
+            embed = discord.Embed(
+                title = "Raid Mode currently disabled",
+                color = self.bot.error_color,
+                description = "Snippet is not sent on thread creation."
+            )
+
+        return await ctx.send(embed = embed)
+
+    @raidmode.command(name = "set")
+    @checks.has_permissions(PermissionLevel.MODERATOR)
+    async def set(self, ctx, enabled: bool, *, value: commands.clean_content = None):
+        """
+        Enable/disable automatic messages for new threads during server raids
+        """
+
+        embed = None
+
+        if enabled is None:
+            raise commands.MissingRequiredArgument(SimpleNamespace(name = "enabled"))
+        
+        if enabled:
+            if value is None:
+                raise commands.MissingRequiredArgument(SimpleNamespace(name = "value"))
+
+            self.bot.config["raid_mode"] = True
+            self.bot.config["raid_mode_snippet"] = value
+            await self.bot.config.update()
+
+            embed = discord.Embed(
+                title = "Raid Mode enabled",
+                color = self.bot.main_color
+            ).add_field(name = "Message to send:", value = value)
+
+        elif not enabled:
+            self.bot.config["raid_mode"] = False
+            self.bot.config["raid_mode_snippet"] = None
+            await self.bot.config.update()
+
+            embed = discord.Embed(
+                title = "Raid Mode disabled",
+                color = self.bot.error_color,
+                description = "Snippet will no longer be sent on thread creation."
+            )
+
+        return await ctx.send(embed = embed)
 
 def setup(bot):
     bot.add_cog(Modmail(bot))

@@ -91,6 +91,8 @@ class ConfigManager:
         "silent_alert_on_mention": False,
         "show_timestamp": True,
         "anonymous_snippets": False,
+        "raid_mode": False,
+        "raid_mode_snippet": None,
         # group conversations
         "private_added_to_group_title": "New Thread (Group)",
         "private_added_to_group_response": "{moderator.name} has added you to a Modmail thread.",
