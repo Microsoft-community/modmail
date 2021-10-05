@@ -64,8 +64,7 @@ class Modmail(commands.Cog):
         for level in PermissionLevel:
             if level <= PermissionLevel.REGULAR:
                 continue
-            permissions = self.bot.config["level_permissions"].get(
-                level.name, [])
+            permissions = self.bot.config["level_permissions"].get(level.name, [])
             for perm in permissions:
                 perm = int(perm)
                 if perm == -1:
@@ -75,10 +74,8 @@ class Modmail(commands.Cog):
                     if key is None:
                         key = self.bot.modmail_guild.get_role(perm)
                 if key is not None:
-                    logger.info(
-                        "Granting %s access to Modmail category.", key.name)
-                    overwrites[key] = discord.PermissionOverwrite(
-                        read_messages=True)
+                    logger.info("Granting %s access to Modmail category.", key.name)
+                    overwrites[key] = discord.PermissionOverwrite(read_messages=True)
 
         category = await self.bot.modmail_guild.create_category(name="Modmail", overwrites=overwrites)
 
@@ -101,8 +98,7 @@ class Modmail(commands.Cog):
             "feeling extra generous, buy us coffee on [Patreon](https://patreon.com/kyber) :heart:!",
         )
 
-        embed.set_footer(
-            text=f'Type "{self.bot.prefix}help" for a complete list of commands.')
+        embed.set_footer(text=f'Type "{self.bot.prefix}help" for a complete list of commands.')
         await log_channel.send(embed=embed)
 
         self.bot.config["main_category_id"] = category.id
@@ -150,11 +146,12 @@ class Modmail(commands.Cog):
         if name is not None:
             val = self.bot.snippets.get(name)
             if val is None:
-                embed = create_not_found_embed(
-                    name, self.bot.snippets.keys(), "Snippet")
+                embed = create_not_found_embed(name, self.bot.snippets.keys(), "Snippet")
             else:
                 embed = discord.Embed(
-                    title=f'Snippet - "{name}":', description=val, color=self.bot.main_color
+                    title=f'Snippet - "{name}":',
+                    description=val,
+                    color=self.bot.main_color
                 )
             return await ctx.send(embed=embed)
 
@@ -162,8 +159,7 @@ class Modmail(commands.Cog):
             embed = discord.Embed(
                 color=self.bot.error_color, description="You dont have any snippets at the moment."
             )
-            embed.set_footer(
-                text=f'Check "{self.bot.prefix}help snippet add" to add a snippet.')
+            embed.set_footer(text=f'Check "{self.bot.prefix}help snippet add" to add a snippet.')
             embed.set_author(name="Snippets", icon_url=ctx.guild.icon_url)
             return await ctx.send(embed=embed)
 
@@ -171,8 +167,7 @@ class Modmail(commands.Cog):
 
         for i, names in enumerate(zip_longest(*(iter(sorted(self.bot.snippets)),) * 15)):
             description = format_description(i, names)
-            embed = discord.Embed(
-                color=self.bot.main_color, description=description)
+            embed = discord.Embed(color=self.bot.main_color, description=description)
             embed.set_author(name="Snippets", icon_url=ctx.guild.icon_url)
             embeds.append(embed)
 
@@ -187,8 +182,7 @@ class Modmail(commands.Cog):
         """
         val = self.bot.snippets.get(name)
         if val is None:
-            embed = create_not_found_embed(
-                name, self.bot.snippets.keys(), "Snippet")
+            embed = create_not_found_embed(name, self.bot.snippets.keys(), "Snippet")
         else:
             val = truncate(escape_code_block(val), 2048 - 7)
             embed = discord.Embed(
@@ -269,8 +263,7 @@ class Modmail(commands.Cog):
             self.bot.snippets.pop(name)
             await self.bot.config.update()
         else:
-            embed = create_not_found_embed(
-                name, self.bot.snippets.keys(), "Snippet")
+            embed = create_not_found_embed(name, self.bot.snippets.keys(), "Snippet")
         await ctx.send(embed=embed)
 
     @snippet.command(name="edit")
@@ -293,8 +286,7 @@ class Modmail(commands.Cog):
                 description=f'`{name}` will now send "{value}".',
             )
         else:
-            embed = create_not_found_embed(
-                name, self.bot.snippets.keys(), "Snippet")
+            embed = create_not_found_embed(name, self.bot.snippets.keys(), "Snippet")
         await ctx.send(embed=embed)
 
     @commands.command(usage="<category> [options]")
@@ -515,7 +507,8 @@ class Modmail(commands.Cog):
             mentions.remove(mention)
             await self.bot.config.update()
             embed = discord.Embed(
-                color=self.bot.main_color, description=f"{mention} will no longer be notified."
+                color=self.bot.main_color,
+                description=f"{mention} will no longer be notified."
             )
         return await ctx.send(embed=embed)
 
@@ -534,8 +527,7 @@ class Modmail(commands.Cog):
         """
         mention = self.parse_user_or_role(ctx, user_or_role)
         if mention is None:
-            raise commands.BadArgument(
-                f"{user_or_role} is not a valid user or role.")
+            raise commands.BadArgument(f"{user_or_role} is not a valid user or role.")
 
         thread = ctx.thread
 
@@ -938,8 +930,7 @@ class Modmail(commands.Cog):
 
             tag = self.bot.config["mod_tag"]
             if tag is None:
-                tag = str(get_top_role(
-                    ctx.author, self.bot.config["use_hoisted_top_role"]))
+                tag = str(get_top_role(ctx.author, self.bot.config["use_hoisted_top_role"]))
             name = self.bot.config["anon_username"]
             if name is None:
                 name = tag
@@ -1109,8 +1100,7 @@ class Modmail(commands.Cog):
         user = user if user is not None else ctx.author
 
         entries = await self.bot.api.search_closed_by(user.id)
-        embeds = self.format_log_embeds(
-            entries, avatar_url=self.bot.guild.icon_url)
+        embeds = self.format_log_embeds(entries, avatar_url=self.bot.guild.icon_url)
 
         if not embeds:
             embed = discord.Embed(
@@ -1160,8 +1150,7 @@ class Modmail(commands.Cog):
 
         entries = await self.bot.api.get_responded_logs(user.id)
 
-        embeds = self.format_log_embeds(
-            entries, avatar_url=self.bot.guild.icon_url)
+        embeds = self.format_log_embeds(entries, avatar_url=self.bot.guild.icon_url)
 
         if not embeds:
             embed = discord.Embed(
@@ -1186,8 +1175,7 @@ class Modmail(commands.Cog):
 
         entries = await self.bot.api.search_by_text(query, limit)
 
-        embeds = self.format_log_embeds(
-            entries, avatar_url=self.bot.guild.icon_url)
+        embeds = self.format_log_embeds(entries, avatar_url=self.bot.guild.icon_url)
 
         if not embeds:
             embed = discord.Embed(
@@ -1230,9 +1218,7 @@ class Modmail(commands.Cog):
         Supports attachments and images as well as
         automatically embedding image URLs.
         """
-        msg = self.bot.formatter.format(
-            msg, channel=ctx.channel, recipient=ctx.thread.recipient, author=ctx.message.author
-        )
+        msg = self.bot.formatter.format(msg, channel=ctx.channel, recipient=ctx.thread.recipient, author=ctx.message.author)
         ctx.message.content = msg
         async with ctx.typing():
             await ctx.thread.reply(ctx.message)
@@ -1252,9 +1238,7 @@ class Modmail(commands.Cog):
         Supports attachments and images as well as
         automatically embedding image URLs.
         """
-        msg = self.bot.formatter.format(
-            msg, channel=ctx.channel, recipient=ctx.thread.recipient, author=ctx.message.author
-        )
+        msg = self.bot.formatter.format(msg, channel=ctx.channel, recipient=ctx.thread.recipient, author=ctx.message.author)
         ctx.message.content = msg
         async with ctx.typing():
             await ctx.thread.reply(ctx.message, anonymous=True)
@@ -1392,9 +1376,7 @@ class Modmail(commands.Cog):
                 silent = True
                 category = category.strip("silently").strip("silent").strip()
                 try:
-                    category = await SimilarCategoryConverter().convert(
-                        ctx, category
-                    )  # attempt to find a category again
+                    category = await SimilarCategoryConverter().convert(ctx, category)  # attempt to find a category again
                 except commands.BadArgument:
                     category = None
 
@@ -1437,7 +1419,10 @@ class Modmail(commands.Cog):
 
             if manual_trigger:  # not react to contact
                 embed = discord.Embed(
-                    title=title, color=self.bot.error_color, description="\n".join(errors))
+                    title=title,
+                    color=self.bot.error_color,
+                     description="\n".join(errors)
+                )
                 await ctx.send(embed=embed, delete_after=10)
 
             if not users:
@@ -1588,8 +1573,12 @@ class Modmail(commands.Cog):
         else:
             embeds[0].description = "Currently there are no blocked users."
 
-        embeds.append(discord.Embed(title="Blocked Roles",
-                      color=self.bot.main_color, description=""))
+        embeds.append(discord.Embed(
+                title="Blocked Roles",
+                color=self.bot.main_color,
+                description=""
+            )
+        )
 
         if roles:
             embed = embeds[-1]
