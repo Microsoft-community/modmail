@@ -6,30 +6,96 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 This project mostly adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html);
 however, insignificant breaking changes do not guarantee a major version bump, see the reasoning [here](https://github.com/kyb3r/modmail/issues/319). If you're a plugin developer, note the "BREAKING" section.
 
+# v3.10.2
+This is a hotfix for react to contact.
+
+### Fixed
+
+- React to contact now works properly.
+
+# v3.10.1
+
+This is a hotfix for the edit command.
+
+### Fixed
+
+- `?edit` now works properly.
+
+# v3.10.0
+
+v3.10 adds group conversations while resolving other bugs and QOL changes. It is potentially breaking to some plugins that adds functionality to threads.
+
+### Breaking
+
+- `Thread.recipient` (`str`) is now `Thread.recipients` (`List[str]`).
+- `Thread.reply` now returns `mod_message, user_message1, user_message2`... It is no longer limited at a size 2 tuple.
+
+### Added
+
+- Ability to have group conversations with up to 5 users. ([GH #143](https://github.com/kyb3r/modmail/issues/143))
+- Snippets are invoked case insensitively. ([GH #3077](https://github.com/kyb3r/modmail/issues/3077), [PR #3080](https://github.com/kyb3r/modmail/pull/3080))
+- Default tags now use top hoisted role. ([GH #3014](https://github.com/kyb3r/modmail/issues/3014))
+- New thread-related config - `thread_show_roles`, `thread_show_account_age`, `thread_show_join_age`, `thread_cancelled`, `thread_creation_contact_title`, `thread_creation_self_contact_response`, `thread_creation_contact_response`. ([GH #3072](https://github.com/kyb3r/modmail/issues/3072))
+- `use_timestamp_channel_name` config to create thread channels by timestamp.
+
+### Improved
+
+- `?contact` now accepts a role or multiple users (creates a group conversation). ([GH #3082](https://github.com/kyb3r/modmail/issues/3082))
+- Aliases are now supported in autotrigger. ([GH #3081](https://github.com/kyb3r/modmail/pull/3081))
+
+### Fixed
+
+- Certain situations where the internal thread cache breaks and spams new channels. ([GH #3022](https://github.com/kyb3r/modmail/issues/3022), [PR #3028](https://github.com/kyb3r/modmail/pull/3028))
+- Blocked users are now no longer allowed to use `?contact` and react to contact. ([COMMENT #819004157](https://github.com/kyb3r/modmail/issues/2969#issuecomment-819004157), [PR #3027](https://github.com/kyb3r/modmail/pull/3027))
+- UnicodeEncodeError will no longer be raised on Windows. ([PR #3043](https://github.com/kyb3r/modmail/pull/3043))
+- Notifications are no longer duplicated when using both `?notify` and `subscribe`. ([PR #3015](https://github.com/kyb3r/modmail/pull/3015))
+- `?contact` now works properly with both category and silent. ([GH #3076](https://github.com/kyb3r/modmail/issues/3076))
+- `close_on_leave_reason` now works properly when `close_on_leave` is enabled. ([GH #3075](https://github.com/kyb3r/modmail/issues/3075))
+- Invalid arguments are now properly catched and a proper error message is sent.
+- Update database after resetting/purging all plugins. ([GH #3011](https://github.com/kyb3r/modmail/pull/3011))
+- `thread_auto_close` timer now only resets on non-note and replies from mods. ([GH #3030](https://github.com/kyb3r/modmail/issues/3030))
+- Deleted messages are now deleted on both ends. ([GH #3041](https://github.com/kyb3r/modmail/issues/3041), [@JerrieAries](https://github.com/kyb3r/modmail/commit/20b31f8e8b5497943513997fef788d72ae668438))
+- Persistent notes are now properly deleted from the database. ([GH #3013](https://github.com/kyb3r/modmail/issues/3013))
+- Modmail Bot is now recognized to have `OWNER` permission level. This affects what can be run in autotriggers.
+
+### Internal
+
+- Fix return types, type hints and unresolved references ([PR #3009](https://github.com/kyb3r/modmail/pull/3009))
+- Reload thread cache only when it's the first on_ready trigger. ([GH #3037](https://github.com/kyb3r/modmail/issues/3037))
+- `format_channel_name` is now extendable to plugins. Modify `Bot.format_channel_name(bot, author, exclude_channel=None, force_null=False):`. ([GH #2982](https://github.com/kyb3r/modmail/issues/2982))
+
+# v3.9.5
+
+### Internal
+
+- Bumped discord.py to v1.7.3, updated all other packages to latest.
+- More debug log files are now kept.
+- Resolve SSL errors by retrying without SSL
+
 # v3.9.4
 
-## Fixed
+### Fixed
 
 - Certain cases where fallback categories were not working as intended. ([GH #3002](https://github.com/kyb3r/modmail/issues/3002), [PR #3003](https://github.com/kyb3r/modmail/pull/3003))
 - There is now a proper message when trying to contact a bot.
 
-## Improved
+### Improved
 
 - `?mention` can now be disabled with `?mention disable`. ([PR #2993](https://github.com/kyb3r/modmail/pull/2993/files))
 - `?mention` now allows vague entries such as `everyone` or `all`. ([PR #2993](https://github.com/kyb3r/modmail/pull/2993/files))
 
-## Internal
+### Internal
 
 - Change heroku python version to 3.9.4 ([PR #3001](https://github.com/kyb3r/modmail/pull/3001))
 
 # v3.9.3
 
-## Added
+### Added
 
 - New config: `use_user_id_channel_name`, when set to TRUE, channel names would get created with the recipient's ID instead of their name and discriminator.
   - This is now an option to better suit the needs of servers in Server Discovery
 
-## Internal
+### Internal
 
 - Signature of `format_channel_name` in core/util.py changed to:
   - `format_channel_name(bot, author, exclude_channel=None, force_null=False)`

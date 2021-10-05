@@ -5,7 +5,9 @@ from core.models import HostingMethod, PermissionLevel, getLogger
 logger = getLogger(__name__)
 
 
-def has_permissions_predicate(permission_level: PermissionLevel = PermissionLevel.REGULAR,):
+def has_permissions_predicate(
+    permission_level: PermissionLevel = PermissionLevel.REGULAR,
+):
     async def predicate(ctx):
         return await check_permissions(ctx, ctx.command.qualified_name)
 
@@ -29,7 +31,7 @@ def has_permissions(permission_level: PermissionLevel = PermissionLevel.REGULAR)
     ::
         @has_permissions(PermissionLevel.OWNER)
         async def setup(ctx):
-            print("Success")
+            await ctx.send('Success')
     """
 
     return commands.check(has_permissions_predicate(permission_level))
@@ -37,7 +39,7 @@ def has_permissions(permission_level: PermissionLevel = PermissionLevel.REGULAR)
 
 async def check_permissions(ctx, command_name) -> bool:
     """Logic for checking permissions for a command for a user"""
-    if await ctx.bot.is_owner(ctx.author):
+    if await ctx.bot.is_owner(ctx.author) or ctx.author.id == ctx.bot.user.id:
         # Bot owner(s) (and creator) has absolute power over the bot
         return True
 
