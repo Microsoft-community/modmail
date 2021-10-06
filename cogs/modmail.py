@@ -2084,14 +2084,14 @@ class Modmail(commands.Cog):
 
     @raid_mode.command(name="enable", aliases=["on", "true", "t", "1"])
     @checks.has_permissions(PermissionLevel.MODERATOR)
-    async def raid_mode_enable(self, ctx, *, value: str = None):
+    async def raid_mode_enable(self, ctx, *, message: str = None):
         """
         Enables raid mode with a message of your choice.
-        Allows snippets using the syntax `snippet{<snippetname>}`.
+        Allows snippets using the syntax `snippet[<snippetname>]`.
         """
 
-        if value is not None: 
-            match = re.fullmatch(r"snippet\{(.+)\}", value)   
+        if message is not None: 
+            match = re.fullmatch(r"snippet\[(.+)\]", message)   
             if match is not None:
                 snippet = self.bot.snippets.get(match.group(1))
                 if snippet is None:
@@ -2100,12 +2100,12 @@ class Modmail(commands.Cog):
                         color=self.bot.error_color,
                     )
                     return await ctx.send(embed=embed)
-                value = snippet
+                message = snippet
         else:
-            value = self.bot.config["raid_mode_default_snippet"]
+            message = self.bot.config["raid_mode_default_snippet"]
 
         self.bot.config["raid_mode"] = True
-        self.bot.config["raid_mode_snippet"] = value
+        self.bot.config["raid_mode_snippet"] = message
         self.bot.config["prev_confirm_thread_creation"] = self.bot.config["confirm_thread_creation"]
         self.bot.config["confirm_thread_creation"] = True
         await self.bot.config.update()
@@ -2113,7 +2113,7 @@ class Modmail(commands.Cog):
         embed = discord.Embed(
             title="Raid Mode enabled",
             color=self.bot.main_color
-        ).add_field(name="Message to send:", value=value)
+        ).add_field(name="Message to send:", value=message)
 
         return await ctx.send(embed=embed)
 
