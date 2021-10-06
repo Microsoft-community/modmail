@@ -1334,6 +1334,19 @@ class ThreadManager:
                 destination = recipient
             else:
                 destination = message.channel
+
+                if self.bot.config["raid_mode"]:
+                    await destination.send(
+                        embed=discord.Embed(
+                            title="Important message from the moderators",
+                            color=self.bot.main_color,
+                            description=self.bot.config["raid_mode_message"],
+                        )
+                    )
+                    timeout = self.bot.config["raid_mode_delay"]
+
+                    await asyncio.sleep(int(timeout.total_seconds()))
+
             confirm = await destination.send(
                 embed=discord.Embed(
                     title=self.bot.config["confirm_thread_creation_title"],
@@ -1341,6 +1354,7 @@ class ThreadManager:
                     color=self.bot.main_color,
                 )
             )
+
             accept_emoji = self.bot.config["confirm_thread_creation_accept"]
             deny_emoji = self.bot.config["confirm_thread_creation_deny"]
             emojis = [accept_emoji, deny_emoji]

@@ -2024,6 +2024,85 @@ class Modmail(commands.Cog):
 
         return await ctx.send(embed=embed)
 
+    @commands.group(name="raidmode", invoke_without_command=True)
+    @checks.has_permissions(PermissionLevel.SUPPORTER)
+    async def raid_mode(self, ctx):
+        """
+        Query or change the current raid mode status.
+        Raid mode makes it so that a moderator-defined message
+        is sent before the thread is created, and makes it so that
+        users have to confirm before a thread is created.
+        """
+
+        embed = None
+
+        if self.bot.config["raid_mode"]:
+            embed = discord.Embed(title="Raid Mode currently enabled", color=self.bot.main_color).add_field(
+                name="Message to send:", value=self.bot.config["raid_mode_message"]
+            )
+        else:
+            embed = discord.Embed(
+                title="Raid Mode currently disabled",
+                color=self.bot.error_color,
+                description="Message is not sent before thread creation.",
+            )
+
+        return await ctx.send(embed=embed)
+
+    @raid_mode.command(name="enable", aliases=["on", "true", "t", "1"])
+    @checks.has_permissions(PermissionLevel.MODERATOR)
+    async def raid_mode_enable(self, ctx, *, message: str = None):
+        """
+        Enables raid mode with a message of your choice.
+        Allows snippets using the syntax `snippet[<snippetname>]`.
+        """
+
+        if message is not None:
+            match = re.fullmatch(r"snippet\[(.+)\]", message)
+            if match is not None:
+                snippet = self.bot.snippets.get(match.group(1))
+                if snippet is None:
+                    embed = discord.Embed(
+                        description=f"Snippet `{match.group(1)}` not found.",
+                        color=self.bot.error_color,
+                    )
+                    return await ctx.send(embed=embed)
+                message = snippet
+        else:
+            message = self.bot.config["raid_mode_default_message"]
+
+        self.bot.config["raid_mode"] = True
+        self.bot.config["raid_mode_message"] = message
+        self.bot.config["prev_confirm_thread_creation"] = self.bot.config["confirm_thread_creation"]
+        self.bot.config["confirm_thread_creation"] = True
+        await self.bot.config.update()
+
+        embed = discord.Embed(title="Raid Mode enabled", color=self.bot.main_color).add_field(
+            name="Message to send:", value=message
+        )
+
+        return await ctx.send(embed=embed)
+
+    @raid_mode.command(name="disable", aliases=["off", "false", "f", "0"])
+    @checks.has_permissions(PermissionLevel.MODERATOR)
+    async def raid_mode_disable(self, ctx):
+        """
+        Disables raid mode and stops sending the defined message when a thread is created.
+        """
+
+        self.bot.config["raid_mode"] = False
+        self.bot.config["raid_mode_message"] = None
+        self.bot.config["confirm_thread_creation"] = self.bot.config["prev_confirm_thread_creation"]
+        await self.bot.config.update()
+
+        embed = discord.Embed(
+            title="Raid Mode disabled",
+            color=self.bot.error_color,
+            description="Message will no longer be sent before thread creation.",
+        )
+
+        return await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Modmail(bot))
