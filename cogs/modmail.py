@@ -2090,12 +2090,19 @@ class Modmail(commands.Cog):
         Allows snippets using the syntax `snippet{<snippetname>}`.
         """
 
-        value = (self.bot.snippets.get(re.match(r"^snippet{([\w]+)}$", value).group(
-            1)) or value) or self.bot.config["raid_mode_default_snippet"]
-
-        if value is None:
-            raise commands.MissingRequiredArgument(
-                SimpleNamespace(name="value"))
+        if value is not None: 
+            n = re.fullmatch(r"snippet\{(.+)\}", value)   
+            if n is not None:
+                snippet = self.bot.snippets.get(n.group(1))
+                if snippet is None:
+                    embed = discord.Embed(
+                        description=f"Snippet `{n.group(1)}` not found.",
+                        color=self.bot.error_color,
+                    )
+                    return await ctx.send(embed=embed)
+                value = snippet
+        else:
+            value = self.bot.config["raid_mode_default_snippet"]
 
         self.bot.config["raid_mode"] = True
         self.bot.config["raid_mode_snippet"] = value
