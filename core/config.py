@@ -177,7 +177,7 @@ class ConfigManager:
         # Logging
         "log_level": "INFO",
         # data collection
-        "data_collection": True
+        "data_collection": True,
     }
 
     colors = {"mod_color", "recipient_color", "main_color", "error_color"}
@@ -216,7 +216,7 @@ class ConfigManager:
         "thread_show_account_age",
         "thread_show_join_age",
         "use_hoisted_top_role",
-        "raid_mode"
+        "raid_mode",
     }
 
     enums = {

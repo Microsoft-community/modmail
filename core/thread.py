@@ -1304,7 +1304,7 @@ class ThreadManager:
         message: discord.Message = None,
         creator: typing.Union[discord.Member, discord.User] = None,
         category: discord.CategoryChannel = None,
-        manual_trigger: bool = True
+        manual_trigger: bool = True,
     ) -> Thread:
         """Creates a Modmail thread"""
 
@@ -1337,16 +1337,16 @@ class ThreadManager:
 
                 if self.bot.config["raid_mode"]:
                     await destination.send(
-                        embed = discord.Embed(
-                            title = "Important message from the moderators", 
-                            color = self.bot.main_color,
-                            description = self.bot.config["raid_mode_message"]
+                        embed=discord.Embed(
+                            title="Important message from the moderators",
+                            color=self.bot.main_color,
+                            description=self.bot.config["raid_mode_message"],
                         )
                     )
                     timeout = self.bot.config["raid_mode_delay"]
 
                     await asyncio.sleep(int(timeout.total_seconds()))
-                
+
             confirm = await destination.send(
                 embed=discord.Embed(
                     title=self.bot.config["confirm_thread_creation_title"],
