@@ -91,7 +91,7 @@ class ConfigManager:
         "silent_alert_on_mention": False,
         "show_timestamp": True,
         "anonymous_snippets": False,
-        "raid_mode_default_snippet": "Hi! We're aware of the ongoing raid. They'll all be banned shortly. Until then, please only continue for other matters. Thanks for your cooperation.",
+        "raid_mode_default_message": "Hi! We're aware of the ongoing raid. They'll all be banned shortly. Until then, please only continue for other matters. Thanks for your cooperation.",
         "raid_mode_delay": isodate.Duration(seconds=5),
         # group conversations
         "private_added_to_group_title": "New Thread (Group)",
@@ -149,7 +149,7 @@ class ConfigManager:
         "subscriptions": {},
         "closures": {},
         "raid_mode": False,
-        "raid_mode_snippet": None,
+        "raid_mode_message": None,
         # misc
         "plugins": [],
         "aliases": {},

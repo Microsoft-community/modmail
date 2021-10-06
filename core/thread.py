@@ -1340,7 +1340,7 @@ class ThreadManager:
                         embed = discord.Embed(
                             title = "Important message from the moderators", 
                             color = self.bot.main_color,
-                            description = self.bot.config["raid_mode_snippet"]
+                            description = self.bot.config["raid_mode_message"]
                         )
                     )
                     timeout = self.bot.config["raid_mode_delay"]
