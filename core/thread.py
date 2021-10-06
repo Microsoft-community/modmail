@@ -1345,12 +1345,7 @@ class ThreadManager:
                     )
                     timeout = self.bot.config["raid_mode_delay"]
 
-                    if timeout == isodate.Duration():
-                        seconds = 5
-                    else:
-                        seconds = int(timeout.total_seconds())
-
-                    await asyncio.sleep(seconds)
+                    await asyncio.sleep(int(timeout.total_seconds()))
                 
             confirm = await destination.send(
                 embed=discord.Embed(

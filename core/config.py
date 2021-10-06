@@ -92,7 +92,7 @@ class ConfigManager:
         "show_timestamp": True,
         "anonymous_snippets": False,
         "raid_mode_default_snippet": "Hi! We're aware of the ongoing raid. They'll all be banned shortly. Until then, please only continue for other matters. Thanks for your cooperation.",
-        "raid_mode_delay": isodate.Duration(),
+        "raid_mode_delay": isodate.Duration(seconds=5),
         # group conversations
         "private_added_to_group_title": "New Thread (Group)",
         "private_added_to_group_response": "{moderator.name} has added you to a Modmail thread.",
