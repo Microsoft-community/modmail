@@ -2091,12 +2091,12 @@ class Modmail(commands.Cog):
         """
 
         if value is not None: 
-            n = re.fullmatch(r"snippet\{(.+)\}", value)   
-            if n is not None:
-                snippet = self.bot.snippets.get(n.group(1))
+            match = re.fullmatch(r"snippet\{(.+)\}", value)   
+            if match is not None:
+                snippet = self.bot.snippets.get(match.group(1))
                 if snippet is None:
                     embed = discord.Embed(
-                        description=f"Snippet `{n.group(1)}` not found.",
+                        description=f"Snippet `{match.group(1)}` not found.",
                         color=self.bot.error_color,
                     )
                     return await ctx.send(embed=embed)
