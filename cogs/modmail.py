@@ -2070,10 +2070,10 @@ class Modmail(commands.Cog):
                 message = snippet
         else:
             message = self.bot.config["raid_mode_default_message"]
-        
+
         if not self.bot.config["raid_mode"]:
             self.bot.config["prev_confirm_thread_creation"] = self.bot.config["confirm_thread_creation"]
-        
+
         self.bot.config["raid_mode"] = True
         self.bot.config["raid_mode_message"] = message
         self.bot.config["confirm_thread_creation"] = True
