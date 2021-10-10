@@ -1466,8 +1466,6 @@ class Modmail(commands.Cog):
         if manual_trigger:
             sent_emoji, _ = await self.bot.retrieve_emoji()
             await self.bot.add_reaction(ctx.message, sent_emoji)
-            await asyncio.sleep(5)
-            await ctx.message.delete()
 
     @commands.group(invoke_without_command=True)
     @checks.has_permissions(PermissionLevel.MODERATOR)
