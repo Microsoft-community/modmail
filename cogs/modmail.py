@@ -1365,12 +1365,13 @@ class Modmail(commands.Cog):
             if "silent" in category or "silently" in category:
                 silent = True
                 category = category.strip("silently").strip("silent").strip()
-                try:
-                    category = await SimilarCategoryConverter().convert(
-                        ctx, category
-                    )  # attempt to find a category again
-                except commands.BadArgument:
-                    category = None
+                if not category == "":
+                    try:
+                        category = await SimilarCategoryConverter().convert(
+                            ctx, category
+                        )  # attempt to find a category again
+                    except commands.BadArgument:
+                        category = None
 
             if isinstance(category, str):
                 category = None
