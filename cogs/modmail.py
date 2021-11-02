@@ -1365,12 +1365,13 @@ class Modmail(commands.Cog):
             if "silent" in category or "silently" in category:
                 silent = True
                 category = category.strip("silently").strip("silent").strip()
-                try:
-                    category = await SimilarCategoryConverter().convert(
-                        ctx, category
-                    )  # attempt to find a category again
-                except commands.BadArgument:
-                    category = None
+                if not category == "":
+                    try:
+                        category = await SimilarCategoryConverter().convert(
+                            ctx, category
+                        )  # attempt to find a category again
+                    except commands.BadArgument:
+                        category = None
 
             if isinstance(category, str):
                 category = None
@@ -1466,8 +1467,6 @@ class Modmail(commands.Cog):
         if manual_trigger:
             sent_emoji, _ = await self.bot.retrieve_emoji()
             await self.bot.add_reaction(ctx.message, sent_emoji)
-            await asyncio.sleep(5)
-            await ctx.message.delete()
 
     @commands.group(invoke_without_command=True)
     @checks.has_permissions(PermissionLevel.MODERATOR)
