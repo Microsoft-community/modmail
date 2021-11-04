@@ -1373,6 +1373,8 @@ class ThreadManager:
                 )
             except asyncio.TimeoutError:
                 thread.cancelled = True
+                self.bot.config["attempted_threads"] += 1
+                await self.bot.config.update()
                 self.bot.loop.create_task(
                     destination.send(
                         embed=discord.Embed(
@@ -1385,6 +1387,8 @@ class ThreadManager:
             else:
                 if str(r.emoji) == deny_emoji:
                     thread.cancelled = True
+                    self.bot.config["attempted_threads"] += 1
+                    await self.bot.config.update()
                     self.bot.loop.create_task(
                         destination.send(
                             embed=discord.Embed(
