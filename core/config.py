@@ -150,6 +150,7 @@ class ConfigManager:
         "closures": {},
         "raid_mode": False,
         "raid_mode_message": None,
+        "attempted_threads": 0,
         # misc
         "plugins": [],
         "aliases": {},

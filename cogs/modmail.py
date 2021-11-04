@@ -2094,6 +2094,7 @@ class Modmail(commands.Cog):
         self.bot.config["raid_mode"] = False
         self.bot.config["raid_mode_message"] = None
         self.bot.config["confirm_thread_creation"] = self.bot.config["prev_confirm_thread_creation"]
+        self.bot.config["attempted_threads"] = 0
         await self.bot.config.update()
 
         embed = discord.Embed(
@@ -2103,6 +2104,14 @@ class Modmail(commands.Cog):
         )
 
         return await ctx.send(embed=embed)
+
+    @commands.command()
+    @checks.has_permissions(PermissionLevel.SUPPORTER)
+    async def attempted(self, ctx):
+        attempts = self.bot.config["attempted_threads"]
+        return await ctx.send(
+            f"There {'was' if attempts == 1 else 'were'} **{attempts}** unsuccessful {'attempt' if attempts == 1 else 'attempts'} to create a thread since raid mode was enabled."
+        )
 
 
 def setup(bot):
