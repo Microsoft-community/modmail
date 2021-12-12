@@ -124,6 +124,7 @@ class ConfigManager:
         "confirm_thread_response": "React to confirm thread creation which will directly contact the moderators",
         "confirm_thread_creation_accept": "\N{WHITE HEAVY CHECK MARK}",
         "confirm_thread_creation_deny": "\N{NO ENTRY SIGN}",
+        "confirm_thread_creation_timeout": isodate.Duration(minutes=2),
         # regex
         "use_regex_autotrigger": False,
         "use_hoisted_top_role": True,
