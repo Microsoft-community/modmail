@@ -1047,7 +1047,7 @@ class Modmail(commands.Cog):
         `user` may be a user ID, mention, or name.
         """
 
-#        await ctx.trigger_typing()
+        await ctx.trigger_typing()
 
         if not user:
             thread = ctx.thread
@@ -1157,7 +1157,7 @@ class Modmail(commands.Cog):
         Provide a `limit` to specify the maximum number of logs the bot should find.
         """
 
-#        await ctx.trigger_typing()
+        await ctx.trigger_typing()
 
         entries = await self.bot.api.search_by_text(query, limit)
 
@@ -1185,8 +1185,9 @@ class Modmail(commands.Cog):
         """
 
         ctx.message.content = msg
-        # async with ctx.typing():
-        await ctx.thread.reply(ctx.message)
+
+        async with ctx.typing():
+            await ctx.thread.reply(ctx.message)
 
     @commands.command(aliases=["formatreply"])
     @checks.has_permissions(PermissionLevel.SUPPORTER)
@@ -1207,8 +1208,8 @@ class Modmail(commands.Cog):
             msg, channel=ctx.channel, recipient=ctx.thread.recipient, author=ctx.message.author
         )
         ctx.message.content = msg
-        # async with ctx.typing():
-        await ctx.thread.reply(ctx.message)
+        async with ctx.typing():
+            await ctx.thread.reply(ctx.message)
 
     @commands.command(aliases=["formatanonreply"])
     @checks.has_permissions(PermissionLevel.SUPPORTER)
@@ -1229,8 +1230,8 @@ class Modmail(commands.Cog):
             msg, channel=ctx.channel, recipient=ctx.thread.recipient, author=ctx.message.author
         )
         ctx.message.content = msg
-        # async with ctx.typing():
-        await ctx.thread.reply(ctx.message, anonymous=True)
+        async with ctx.typing():
+            await ctx.thread.reply(ctx.message, anonymous=True)
 
     @commands.command(aliases=["anonreply", "anonymousreply"])
     @checks.has_permissions(PermissionLevel.SUPPORTER)
@@ -1246,8 +1247,8 @@ class Modmail(commands.Cog):
         and `anon_tag` config variables to do so.
         """
         ctx.message.content = msg
-        # async with ctx.typing():
-        await ctx.thread.reply(ctx.message, anonymous=True)
+        async with ctx.typing():
+            await ctx.thread.reply(ctx.message, anonymous=True)
 
     @commands.command(aliases=["plainreply"])
     @checks.has_permissions(PermissionLevel.SUPPORTER)
@@ -1260,8 +1261,8 @@ class Modmail(commands.Cog):
         automatically embedding image URLs.
         """
         ctx.message.content = msg
-        # async with ctx.typing():
-        await ctx.thread.reply(ctx.message, plain=True)
+        async with ctx.typing():
+            await ctx.thread.reply(ctx.message, plain=True)
 
     @commands.command(aliases=["plainanonreply", "plainanonymousreply"])
     @checks.has_permissions(PermissionLevel.SUPPORTER)
@@ -1274,8 +1275,8 @@ class Modmail(commands.Cog):
         automatically embedding image URLs.
         """
         ctx.message.content = msg
-        # async with ctx.typing():
-        await ctx.thread.reply(ctx.message, anonymous=True, plain=True)
+        async with ctx.typing():
+            await ctx.thread.reply(ctx.message, anonymous=True, plain=True)
 
     @commands.group(invoke_without_command=True)
     @checks.has_permissions(PermissionLevel.SUPPORTER)
@@ -1287,9 +1288,9 @@ class Modmail(commands.Cog):
         Useful for noting context.
         """
         ctx.message.content = msg
-        # async with ctx.typing():
-        msg = await ctx.thread.note(ctx.message)
-        await msg.pin()
+        async with ctx.typing():
+            msg = await ctx.thread.note(ctx.message)
+            await msg.pin()
 
     @note.command(name="persistent", aliases=["persist"])
     @checks.has_permissions(PermissionLevel.SUPPORTER)
@@ -1299,7 +1300,7 @@ class Modmail(commands.Cog):
         Take a persistent note about the current user.
         """
         ctx.message.content = msg
-        #async with ctx.typing():
+        async with ctx.typing():
             msg = await ctx.thread.note(ctx.message, persistent=True)
             await msg.pin()
         await self.bot.api.create_note(recipient=ctx.thread.recipient, message=ctx.message, message_id=msg.id)
@@ -1469,7 +1470,7 @@ class Modmail(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     @checks.has_permissions(PermissionLevel.MODERATOR)
-#    @trigger_typing
+    @trigger_typing
     async def blocked(self, ctx):
         """Retrieve a list of blocked users."""
 
