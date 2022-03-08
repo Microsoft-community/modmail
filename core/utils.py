@@ -352,7 +352,7 @@ def format_description(i, names):
 def trigger_typing(func):
     @functools.wraps(func)
     async def wrapper(self, ctx: commands.Context, *args, **kwargs):
-        await ctx.trigger_typing()
+        # await ctx.trigger_typing()
         return await func(self, ctx, *args, **kwargs)
 
     return wrapper

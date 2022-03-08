@@ -467,30 +467,30 @@ class Plugins(commands.Cog):
             embed = discord.Embed(description="Plugin is not installed.", color=self.bot.error_color)
             return await ctx.send(embed=embed)
 
-        async with ctx.typing():
-            embed = discord.Embed(
-                description=f"Successfully updated {plugin.name}.", color=self.bot.main_color
-            )
-            await self.download_plugin(plugin, force=True)
-            if self.bot.config.get("enable_plugins"):
-                try:
-                    self.bot.unload_extension(plugin.ext_string)
-                except commands.ExtensionError:
-                    logger.warning("Plugin unload fail.", exc_info=True)
-                try:
-                    await self.load_plugin(plugin)
-                except Exception:
-                    embed = discord.Embed(
-                        description=f"Failed to update {plugin.name}. This plugin will now be removed from your bot.",
-                        color=self.bot.error_color,
-                    )
-                    self.bot.config["plugins"].remove(plugin_name)
-                    logger.debug("Failed to update %s. Removed plugin from config.", plugin_name)
-                else:
-                    logger.debug("Updated %s.", plugin_name)
+        # async with ctx.typing():
+        embed = discord.Embed(
+            description=f"Successfully updated {plugin.name}.", color=self.bot.main_color
+        )
+        await self.download_plugin(plugin, force=True)
+        if self.bot.config.get("enable_plugins"):
+            try:
+                self.bot.unload_extension(plugin.ext_string)
+            except commands.ExtensionError:
+                logger.warning("Plugin unload fail.", exc_info=True)
+            try:
+                await self.load_plugin(plugin)
+            except Exception:
+                embed = discord.Embed(
+                    description=f"Failed to update {plugin.name}. This plugin will now be removed from your bot.",
+                    color=self.bot.error_color,
+                )
+                self.bot.config["plugins"].remove(plugin_name)
+                logger.debug("Failed to update %s. Removed plugin from config.", plugin_name)
             else:
                 logger.debug("Updated %s.", plugin_name)
-            return await ctx.send(embed=embed)
+        else:
+            logger.debug("Updated %s.", plugin_name)
+        return await ctx.send(embed=embed)
 
     @plugins.command(name="update")
     @checks.has_permissions(PermissionLevel.OWNER)
