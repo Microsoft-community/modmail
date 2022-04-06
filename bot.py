@@ -1269,6 +1269,10 @@ class ModmailBot(commands.Bot):
                 logger.warning("Failed to find linked message for reactions: %s", e)
                 return
         else:
+            # msftcomm: Ignore all flag emoji to prevent conflicts with Kitchen Sink translation
+            if re.match(r"\U0001f3f4|[\U0001F1E6-\U0001F1FF]", str(reaction)):
+                return
+
             thread = await self.threads.find(channel=channel)
             if not thread:
                 return
