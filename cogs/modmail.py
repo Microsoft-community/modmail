@@ -2036,9 +2036,7 @@ class Modmail(commands.Cog):
         embed = None
 
         if self.bot.config["raid_mode"]:
-            embed = discord.Embed(title="Raid Mode currently enabled", color=self.bot.main_color).add_field(
-                name="Message to send:", value=self.bot.config["raid_mode_message"]
-            )
+            embed = discord.Embed(title="Raid Mode currently enabled", color=self.bot.main_color, description=self.bot.config["raid_mode_message"])
         else:
             embed = discord.Embed(
                 title="Raid Mode currently disabled",
@@ -2078,9 +2076,7 @@ class Modmail(commands.Cog):
         self.bot.config["confirm_thread_creation"] = True
         await self.bot.config.update()
 
-        embed = discord.Embed(title="Raid Mode enabled", color=self.bot.main_color).add_field(
-            name="Message to send:", value=message
-        )
+        embed = discord.Embed(title="Raid Mode enabled", color=self.bot.main_color, description=message)
 
         return await ctx.send(embed=embed)
 
