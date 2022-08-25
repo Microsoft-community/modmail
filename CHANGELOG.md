@@ -7,18 +7,11 @@ This project mostly adheres to [Semantic Versioning](https://semver.org/spec/v2.
 however, insignificant breaking changes do not guarantee a major version bump, see the reasoning [here](https://github.com/kyb3r/modmail/issues/319). If you're a plugin developer, note the "BREAKING" section.
 
 # v3.10.3
-
-### Improved
-
-- Thread genesis message now shows other recipients.
+This is a hotfix for contact command.
 
 ### Fixed
 
-- `?snippet add` now properly blocks command names.
-
-### Internal
-
-- Set `LOG_DISCORD` environment variable to the logger level and log discord events.
+- Fixed a bug where contacting with no category argument defaults to the top category.
 
 # v3.10.2
 This is a hotfix for react to contact.
