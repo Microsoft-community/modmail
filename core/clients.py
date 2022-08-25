@@ -644,6 +644,12 @@ class MongoDBClient(ApiClient):
         channel_id = str(channel_id) or str(message.channel.id)
         message_id = str(message_id) or str(message.id)
 
+        member = self.bot.guild.get_member(message.author.id)
+        if member:
+            avatar_url = member.display_avatar.url
+        else:
+            avatar_url = author.display_avatar.url
+
         data = {
             "timestamp": str(message.created_at),
             "message_id": message_id,
@@ -651,7 +657,7 @@ class MongoDBClient(ApiClient):
                 "id": str(message.author.id),
                 "name": message.author.name,
                 "discriminator": message.author.discriminator,
-                "avatar_url": message.author.display_avatar.url,
+                "avatar_url": avatar_url,
                 "mod": not isinstance(message.channel, DMChannel),
             },
             "content": message.content,
@@ -666,6 +672,14 @@ class MongoDBClient(ApiClient):
                 }
                 for a in message.attachments
             ],
+            "stickers": [
+                {
+                    "name": sticker.name,
+                    "url": sticker.url,
+                    "format": sticker.format
+                }
+                for sticker in message.stickers
+            ]
         }
 
         return await self.logs.find_one_and_update(
