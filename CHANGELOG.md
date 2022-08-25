@@ -67,18 +67,11 @@ however, insignificant breaking changes do not guarantee a major version bump, s
 - Remove deprecated `core/decorators.py` from v3.3.0
 
 # v3.10.3
-
-### Improved
-
-- Thread genesis message now shows other recipients.
+This is a hotfix for contact command.
 
 ### Fixed
 
-- `?snippet add` now properly blocks command names.
-
-### Internal
-
-- Set `LOG_DISCORD` environment variable to the logger level and log discord events.
+- Fixed a bug where contacting with no category argument defaults to the top category.
 
 # v3.10.2
 This is a hotfix for react to contact.

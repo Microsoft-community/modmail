@@ -962,7 +962,6 @@ class ModmailBot(commands.Bot):
                             # silently ignore
                             logger.error("Failed to send message:", exc_info=True)
 
-                await self.add_reaction(message, sent_emoji)
                 self.dispatch("thread_reply", thread, False, message, False, False)
 
     def _get_snippet_command(self) -> commands.Command:
@@ -1296,6 +1295,10 @@ class ModmailBot(commands.Bot):
                 logger.warning("Failed to find linked message for reactions: %s", e)
                 return
         else:
+            # msftcomm: Ignore all flag emoji to prevent conflicts with Kitchen Sink translation
+            if re.match(r"\U0001f3f4|[\U0001F1E6-\U0001F1FF]", str(reaction)):
+                return
+
             thread = await self.threads.find(channel=channel)
             if not thread:
                 return
