@@ -673,13 +673,9 @@ class MongoDBClient(ApiClient):
                 for a in message.attachments
             ],
             "stickers": [
-                {
-                    "name": sticker.name,
-                    "url": sticker.url,
-                    "format": sticker.format
-                }
+                {"name": sticker.name, "url": sticker.url, "format": sticker.format}
                 for sticker in message.stickers
-            ]
+            ],
         }
 
         return await self.logs.find_one_and_update(
