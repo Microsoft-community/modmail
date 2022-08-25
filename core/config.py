@@ -96,6 +96,8 @@ class ConfigManager:
         "plain_snippets": False,
         "require_close_reason": False,
         "show_log_url_button": False,
+        "raid_mode_default_message": "Hi! We're aware of the ongoing raid. They'll all be banned shortly. Until then, please only continue for other matters. Thanks for your cooperation.",
+        "raid_mode_delay": isodate.Duration(seconds=5),
         # group conversations
         "private_added_to_group_title": "New Thread (Group)",
         "private_added_to_group_response": "{moderator.name} has added you to a Modmail thread.",
@@ -122,10 +124,12 @@ class ConfigManager:
         "react_to_contact_emoji": "\N{WHITE HEAVY CHECK MARK}",
         # confirm thread creation
         "confirm_thread_creation": False,
+        "prev_confirm_thread_creation": False,
         "confirm_thread_creation_title": "Confirm thread creation",
         "confirm_thread_response": "React to confirm thread creation which will directly contact the moderators",
         "confirm_thread_creation_accept": "\N{WHITE HEAVY CHECK MARK}",
         "confirm_thread_creation_deny": "\N{NO ENTRY SIGN}",
+        "confirm_thread_creation_timeout": isodate.Duration(minutes=2),
         # regex
         "use_regex_autotrigger": False,
         "use_hoisted_top_role": True,
@@ -150,6 +154,8 @@ class ConfigManager:
         "notification_squad": {},
         "subscriptions": {},
         "closures": {},
+        "raid_mode": False,
+        "raid_mode_message": None,
         # misc
         "plugins": [],
         "aliases": {},
@@ -182,7 +188,7 @@ class ConfigManager:
 
     colors = {"mod_color", "recipient_color", "main_color", "error_color"}
 
-    time_deltas = {"account_age", "guild_age", "thread_auto_close", "thread_cooldown"}
+    time_deltas = {"account_age", "guild_age", "thread_auto_close", "thread_cooldown", "raid_mode_delay"}
 
     booleans = {
         "use_user_id_channel_name",
@@ -221,6 +227,7 @@ class ConfigManager:
         "thread_show_account_age",
         "thread_show_join_age",
         "use_hoisted_top_role",
+        "raid_mode",
     }
 
     enums = {
