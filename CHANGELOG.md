@@ -35,6 +35,7 @@ however, insignificant breaking changes do not guarantee a major version bump, s
 - Use discord relative timedeltas. ([GH #3046](https://github.com/kyb3r/modmail/issues/3046))
 - Use discord native buttons for all paginator sessions.
 - `?help` and `?blocked` paginator sessions now have better multi-page UI.
+- Autoupdate now automatically updates pipenv dependencies if possible.
 
 ### Fixed
 
@@ -53,6 +54,8 @@ however, insignificant breaking changes do not guarantee a major version bump, s
 - Delete channel auto close functionality now works.
 - Improved error handling for autoupdate. ([PR #3161](https://github.com/kyb3r/modmail/pull/3161))
 - Skip loading of already-loaded cog. ([PR #3172](https://github.com/kyb3r/modmail/pull/3172))
+- Respect plugin's `cog_command_error`. ([GH #3170](https://github.com/kyb3r/modmail/issues/3170), [PR #3178](https://github.com/kyb3r/modmail/pull/3178))
+- Use silent as a typing literal for contacting. ([GH #3179](https://github.com/kyb3r/modmail/issues/3179))
 
 ### Internal
 
@@ -65,6 +68,20 @@ however, insignificant breaking changes do not guarantee a major version bump, s
 - Bump aiohttp to v3.8.1
 - Bump lottie to v0.6.11
 - Remove deprecated `core/decorators.py` from v3.3.0
+
+# v3.10.4
+
+### Improved
+
+- Thread genesis message now shows other recipients.
+
+### Fixed
+
+- `?snippet add` now properly blocks command names.
+
+### Internal
+
+- Set `LOG_DISCORD` environment variable to the logger level and log discord events.
 
 # v3.10.3
 This is a hotfix for contact command.

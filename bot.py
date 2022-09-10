@@ -1,4 +1,4 @@
-__version__ = "4.0.0-dev17"
+__version__ = "4.0.0-dev20"
 
 
 import asyncio
@@ -247,10 +247,10 @@ class ModmailBot(commands.Bot):
                 except Exception:
                     logger.critical("Fatal exception", exc_info=True)
                 finally:
-                    if not self.is_closed():
-                        await self.close()
                     if self.session:
                         await self.session.close()
+                    if not self.is_closed():
+                        await self.close()
 
         async def _cancel_tasks():
             async with self:
@@ -282,7 +282,7 @@ class ModmailBot(commands.Bot):
                         pass
 
         try:
-            asyncio.run(runner())
+            asyncio.run(runner(), debug=bool(os.getenv("DEBUG_ASYNCIO")))
         except (KeyboardInterrupt, SystemExit):
             logger.info("Received signal to terminate bot and event loop.")
         finally:
@@ -1514,7 +1514,17 @@ class ModmailBot(commands.Bot):
         logger.error("Ignoring exception in %s.", event_method)
         logger.error("Unexpected exception:", exc_info=sys.exc_info())
 
-    async def on_command_error(self, context, exception):
+    async def on_command_error(
+        self, context: commands.Context, exception: Exception, *, unhandled_by_cog: bool = False
+    ) -> None:
+        if not unhandled_by_cog:
+            command = context.command
+            if command and command.has_error_handler():
+                return
+            cog = context.cog
+            if cog and cog.has_error_handler():
+                return
+
         if isinstance(exception, (commands.BadArgument, commands.BadUnionArgument)):
             await context.typing()
             await context.send(embed=discord.Embed(color=self.error_color, description=str(exception)))
@@ -1666,17 +1676,30 @@ class ModmailBot(commands.Bot):
                     return
 
                 elif res != "Already up to date.":
+                    if os.getenv("PIPENV_ACTIVE"):
+                        # Update pipenv if possible
+                        await asyncio.create_subprocess_shell(
+                            "pipenv sync",
+                            stderr=PIPE,
+                            stdout=PIPE,
+                        )
+                        message = ""
+                    else:
+                        message = "\n\nDo manually update dependencies if your bot has crashed."
+
                     logger.info("Bot has been updated.")
                     channel = self.update_channel
                     if self.hosting_method in (HostingMethod.PM2, HostingMethod.SYSTEMD):
                         embed = discord.Embed(title="Bot has been updated", color=self.main_color)
-                        embed.set_footer(text=f"Updating Modmail v{self.version} " f"-> v{latest.version}")
+                        embed.set_footer(
+                            text=f"Updating Modmail v{self.version} " f"-> v{latest.version} {message}"
+                        )
                         if self.config["update_notifications"]:
                             await channel.send(embed=embed)
                     else:
                         embed = discord.Embed(
                             title="Bot has been updated and is logging out.",
-                            description="If you do not have an auto-restart setup, please manually start the bot.",
+                            description=f"If you do not have an auto-restart setup, please manually start the bot. {message}",
                             color=self.main_color,
                         )
                         embed.set_footer(text=f"Updating Modmail v{self.version} -> v{latest.version}")
@@ -1716,7 +1739,7 @@ class ModmailBot(commands.Bot):
         else:
             if self.config["use_random_channel_name"]:
                 to_hash = self.token.split(".")[-1] + str(author.id)
-                digest = hashlib.md5(to_hash.encode("utf8"))
+                digest = hashlib.md5(to_hash.encode("utf8"), usedforsecurity=False)
                 name = new_name = digest.hexdigest()[-8:]
             elif self.config["use_user_id_channel_name"]:
                 name = new_name = str(author.id)
@@ -1774,9 +1797,11 @@ def main():
         sys.exit(0)
 
     # check discord version
-    if discord.__version__ != "2.0.0":
+    discord_version = "2.0.1"
+    if discord.__version__ != discord_version:
         logger.error(
-            "Dependencies are not updated, run pipenv install. discord.py version expected 2.0.0, received %s",
+            "Dependencies are not updated, run pipenv install. discord.py version expected %s, received %s",
+            discord_version,
             discord.__version__,
         )
         sys.exit(0)

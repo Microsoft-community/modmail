@@ -2,7 +2,7 @@ import asyncio
 import re
 from datetime import datetime, timezone
 from itertools import zip_longest
-from typing import Optional, Union, List, Tuple
+from typing import Optional, Union, List, Tuple, Literal
 from types import SimpleNamespace
 
 import discord
@@ -463,7 +463,13 @@ class Modmail(commands.Cog):
     @commands.command(usage="[after] [close message]")
     @checks.has_permissions(PermissionLevel.SUPPORTER)
     @checks.thread_only()
-    async def close(self, ctx, *, after: UserFriendlyTime = None):
+    async def close(
+        self,
+        ctx,
+        option: Optional[Literal["silent", "silently", "cancel"]] = "",
+        *,
+        after: UserFriendlyTime = None,
+    ):
         """
         Close the current thread.
 
@@ -485,15 +491,11 @@ class Modmail(commands.Cog):
 
         thread = ctx.thread
 
-        now = discord.utils.utcnow()
-
-        close_after = (after.dt - now).total_seconds() if after else 0
-        message = after.arg if after else None
-        silent = str(message).lower() in {"silent", "silently"}
-        cancel = str(message).lower() == "cancel"
+        close_after = (after.dt - after.now).total_seconds() if after else 0
+        silent = any(x == option for x in {"silent", "silently"})
+        cancel = option == "cancel"
 
         if cancel:
-
             if thread.close_task is not None or thread.auto_close_task is not None:
                 await thread.cancel_closure(all=True)
                 embed = discord.Embed(
@@ -507,10 +509,11 @@ class Modmail(commands.Cog):
 
             return await ctx.send(embed=embed)
 
+        message = after.arg if after else None
         if self.bot.config["require_close_reason"] and message is None:
             raise commands.BadArgument("Provide a reason for closing the thread.")
 
-        if after and after.dt > now:
+        if after and after.dt > after.now:
             await self.send_scheduled_close_message(ctx, after, silent)
 
         await thread.close(closer=ctx.author, after=close_after, message=message, silent=silent)
@@ -1499,9 +1502,11 @@ class Modmail(commands.Cog):
     async def contact(
         self,
         ctx,
-        users: commands.Greedy[Union[discord.Member, discord.User, discord.Role]],
+        users: commands.Greedy[
+            Union[Literal["silent", "silently"], discord.Member, discord.User, discord.Role]
+        ],
         *,
-        category: Union[SimilarCategoryConverter, str] = None,
+        category: SimilarCategoryConverter = None,
         manual_trigger=True,
     ):
         """
@@ -1515,15 +1520,20 @@ class Modmail(commands.Cog):
         A maximum of 5 users are allowed.
         `options` can be `silent` or `silently`.
         """
-        silent = False
+        silent = any(x in users for x in ("silent", "silently"))
+        if silent:
+            try:
+                users.remove("silent")
+            except ValueError:
+                pass
+
+            try:
+                users.remove("silently")
+            except ValueError:
+                pass
+
         if isinstance(category, str):
             category = category.split()
-
-            # just check the last element in the list
-            if category[-1].lower() in ("silent", "silently"):
-                silent = True
-                # remove the last element as we no longer need it
-                category.pop()
 
             category = " ".join(category)
             if category:
@@ -1850,10 +1860,12 @@ class Modmail(commands.Cog):
         if after is not None:
             if "%" in reason:
                 raise commands.BadArgument('The reason contains illegal character "%".')
+            unixtime = int(after.dt.replace(tzinfo=timezone.utc).timestamp())
+
             if after.arg:
-                reason += f" for `{after.arg}`"
+                reason += f" until: <t:{unixtime}:R>"
             if after.dt > after.now:
-                reason += f" until {after.dt.isoformat()}"
+                reason += f" until <t:{unixtime}:f>"
 
         reason += "."
 
