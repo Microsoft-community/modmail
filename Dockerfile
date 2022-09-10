@@ -1,8 +1,8 @@
-FROM python:3.9-slim as py
+FROM python:3.9-alpine as py
 
 FROM py as build
 
-RUN apt update && apt install -y g++
+RUN apk add --no-cache build-base
 COPY requirements.txt /
 RUN pip install --prefix=/inst -U -r /requirements.txt
 
