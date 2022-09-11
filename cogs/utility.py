@@ -694,7 +694,7 @@ class Utility(commands.Cog):
             option = user_or_role[0].lower()
             if option == "disable":
                 embed = discord.Embed(
-                    description="Disabled mention on thread creation.",
+                    description=f"Disabled mention on thread creation.",
                     color=self.bot.main_color,
                 )
                 self.bot.config["mention"] = None
@@ -892,7 +892,7 @@ class Utility(commands.Cog):
                 description=f"`{key}` is an invalid key.",
             )
             if closest:
-                embed.add_field(name="Perhaps you meant:", value="\n".join(f"`{x}`" for x in closest))
+                embed.add_field(name=f"Perhaps you meant:", value="\n".join(f"`{x}`" for x in closest))
             return await ctx.send(embed=embed)
 
         config_help = self.bot.config.config_help
@@ -1861,7 +1861,7 @@ class Utility(commands.Cog):
         embed = discord.Embed(
             title="Keyword Not Found",
             color=self.bot.error_color,
-            description="No autotrigger keyword found.",
+            description=f"No autotrigger keyword found.",
         )
         return await ctx.send(embed=embed)
 
