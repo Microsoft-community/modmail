@@ -5,6 +5,7 @@ kill_signal = "SIGINT"
 kill_timeout = 5
 
 [env]
+  SWAP = "true"
 
 [experimental]
   allowed_public_ports = []
