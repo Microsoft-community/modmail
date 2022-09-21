@@ -1652,21 +1652,12 @@ class Modmail(commands.Cog):
         blocked_users = list(self.bot.blocked_users.items())
         for id_, reason in blocked_users:
             # parse "reason" and check if block is expired
-            # etc "blah blah blah... until 2019-10-14T21:12:45.559948."
-            end_time = re.search(r"until ([^`]+?)\.$", reason)
-            if end_time is None:
-                # backwards compat
-                end_time = re.search(r"%([^%]+?)%", reason)
-                if end_time is not None:
-                    logger.warning(
-                        r"Deprecated time message for user %s, block and unblock again to update.",
-                        id_,
-                    )
+            try:
+                end_time, after = extract_block_timestamp(reason, id_)
+            except ValueError:
+                continue
 
             if end_time is not None:
-                after = (
-                    datetime.fromisoformat(end_time.group(1)).replace(tzinfo=timezone.utc) - now
-                ).total_seconds()
                 if after <= 0:
                     # No longer blocked
                     self.bot.blocked_users.pop(str(id_))
@@ -1684,18 +1675,12 @@ class Modmail(commands.Cog):
         for id_, reason in blocked_roles:
             # parse "reason" and check if block is expired
             # etc "blah blah blah... until 2019-10-14T21:12:45.559948."
-            end_time = re.search(r"until ([^`]+?)\.$", reason)
-            if end_time is None:
-                # backwards compat
-                end_time = re.search(r"%([^%]+?)%", reason)
-                if end_time is not None:
-                    logger.warning(
-                        r"Deprecated time message for role %s, block and unblock again to update.",
-                        id_,
-                    )
+            try:
+                end_time, after = extract_block_timestamp(reason, id_)
+            except ValueError:
+                continue
 
             if end_time is not None:
-                after = (datetime.fromisoformat(end_time.group(1)) - now).total_seconds()
                 if after <= 0:
                     # No longer blocked
                     self.bot.blocked_roles.pop(str(id_))
@@ -1860,12 +1845,13 @@ class Modmail(commands.Cog):
         if after is not None:
             if "%" in reason:
                 raise commands.BadArgument('The reason contains illegal character "%".')
-            unixtime = int(after.dt.replace(tzinfo=timezone.utc).timestamp())
 
             if after.arg:
-                reason += f" until: <t:{unixtime}:R>"
+                fmt_dt = discord.utils.format_dt(after.dt, "R")
             if after.dt > after.now:
-                reason += f" until <t:{unixtime}:f>"
+                fmt_dt = discord.utils.format_dt(after.dt, "f")
+
+            reason += f" until {fmt_dt}"
 
         reason += "."
 

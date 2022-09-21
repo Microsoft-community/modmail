@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 This project mostly adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html);
 however, insignificant breaking changes do not guarantee a major version bump, see the reasoning [here](https://github.com/kyb3r/modmail/issues/319). If you're a plugin developer, note the "BREAKING" section.
 
+# v4.0.1
+
+This is a hotfix release.
+
+### Improved
+
+- Error Messages
+
+### Fixed
+
+- Thread cooldown
+
+
 # v4.0.0
 
 ### Breaking
@@ -14,6 +27,7 @@ however, insignificant breaking changes do not guarantee a major version bump, s
 - Upgraded to discord.py v2.0 ([internal changes](https://discordpy.readthedocs.io/en/latest/migrating.html), [GH #2990](https://github.com/kyb3r/modmail/issues/2990)).
 - Python 3.8 or higher is required.
 - Asyncio changes ([gist](https://gist.github.com/Rapptz/6706e1c8f23ac27c98cee4dd985c8120))
+- Plugin registry is purged and all developers have to re-apply due to breaking changes.
 
 ### Added
 
@@ -68,6 +82,12 @@ however, insignificant breaking changes do not guarantee a major version bump, s
 - Bump aiohttp to v3.8.1
 - Bump lottie to v0.6.11
 - Remove deprecated `core/decorators.py` from v3.3.0
+
+# v3.10.5
+
+### Internal
+
+- Locked plugin registry version impending v4 release.
 
 # v3.10.4
 

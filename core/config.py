@@ -373,7 +373,7 @@ class ConfigManager:
 
         return value
 
-    def set(self, key: str, item: typing.Any, convert=True) -> None:
+    async def set(self, key: str, item: typing.Any, convert=True) -> None:
         if not convert:
             return self.__setitem__(key, item)
 
@@ -408,7 +408,7 @@ class ConfigManager:
             except isodate.ISO8601Error:
                 try:
                     converter = UserFriendlyTime()
-                    time = converter.convert(None, item)
+                    time = await converter.convert(None, item, now=discord.utils.utcnow())
                     if time.arg:
                         raise ValueError
                 except BadArgument as exc:
