@@ -1,8 +1,8 @@
-FROM python:3.9 as py
+FROM python:3.10-alpine as py
 
 FROM py as build
 
-RUN apt update && apt install -y g++ git
+RUN apk add --no-cache build-base
 COPY requirements.txt /
 RUN pip install --prefix=/inst -U -r /requirements.txt
 
