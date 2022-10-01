@@ -35,11 +35,11 @@ v3.10 adds group conversations while resolving other bugs and QOL changes. It is
 ### Breaking
 
 - `Thread.recipient` (`str`) is now `Thread.recipients` (`List[str]`).
-- `Thread.reply` now returns mod_message, user_message1, user_message2... It is no longer limited at a size 2 tuple.
+- `Thread.reply` now returns `mod_message, user_message1, user_message2`... It is no longer limited at a size 2 tuple.
 
 ### Added
 
-- Ability to have group conversations. ([GH #143](https://github.com/kyb3r/modmail/issues/143))
+- Ability to have group conversations with up to 5 users. ([GH #143](https://github.com/kyb3r/modmail/issues/143))
 - Snippets are invoked case insensitively. ([GH #3077](https://github.com/kyb3r/modmail/issues/3077), [PR #3080](https://github.com/kyb3r/modmail/pull/3080))
 - Default tags now use top hoisted role. ([GH #3014](https://github.com/kyb3r/modmail/issues/3014))
 - New thread-related config - `thread_show_roles`, `thread_show_account_age`, `thread_show_join_age`, `thread_cancelled`, `thread_creation_contact_title`, `thread_creation_self_contact_response`, `thread_creation_contact_response`. ([GH #3072](https://github.com/kyb3r/modmail/issues/3072))
