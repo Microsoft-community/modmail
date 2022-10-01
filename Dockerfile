@@ -14,5 +14,8 @@ ENV USING_DOCKER yes
 COPY --from=build /inst /usr/local
 
 WORKDIR /modmailbot
-CMD ["python", "bot.py"]
 COPY . /modmailbot
+
+COPY ./entrypoint.sh /
+ENTRYPOINT [ "/entrypoint.sh" ]
+CMD ["python", "bot.py"]
