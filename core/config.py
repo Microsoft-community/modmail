@@ -13,7 +13,7 @@ from discord.ext.commands import BadArgument
 
 from core._color_data import ALL_COLORS
 from core.models import DMDisabled, InvalidConfigError, Default, getLogger
-from core.time import UserFriendlyTimeSync
+from core.time import UserFriendlyTime
 from core.utils import strtobool
 
 logger = getLogger(__name__)
@@ -52,6 +52,8 @@ class ConfigManager:
         "close_emoji": "\N{LOCK}",
         "use_user_id_channel_name": False,
         "use_timestamp_channel_name": False,
+        "use_nickname_channel_name": False,
+        "use_random_channel_name": False,
         "recipient_thread_close": False,
         "thread_show_roles": True,
         "thread_show_account_age": True,
@@ -77,7 +79,7 @@ class ConfigManager:
         "thread_move_notify_mods": False,
         "thread_move_response": "This thread has been moved.",
         "cooldown_thread_title": "Message not sent!",
-        "cooldown_thread_response": "You must wait for {delta} before you can contact me again.",
+        "cooldown_thread_response": "Your cooldown ends {delta}. Try contacting me then.",
         "disabled_new_thread_title": "Not Delivered",
         "disabled_new_thread_response": "We are not accepting new threads.",
         "disabled_new_thread_footer": "Please try again later...",
@@ -91,6 +93,9 @@ class ConfigManager:
         "silent_alert_on_mention": False,
         "show_timestamp": True,
         "anonymous_snippets": False,
+        "plain_snippets": False,
+        "require_close_reason": False,
+        "show_log_url_button": False,
         "raid_mode_default_message": "Hi! We're aware of the ongoing raid. They'll all be banned shortly. Until then, please only continue for other matters. Thanks for your cooperation.",
         "raid_mode_delay": isodate.Duration(seconds=5),
         # group conversations
@@ -188,11 +193,14 @@ class ConfigManager:
     booleans = {
         "use_user_id_channel_name",
         "use_timestamp_channel_name",
+        "use_nickname_channel_name",
+        "use_random_channel_name",
         "user_typing",
         "mod_typing",
         "reply_without_command",
         "anon_reply_without_command",
         "plain_reply_without_command",
+        "show_log_url_button",
         "recipient_thread_close",
         "thread_auto_close_silently",
         "thread_move_notify",
@@ -212,6 +220,8 @@ class ConfigManager:
         "update_notifications",
         "thread_contact_silently",
         "anonymous_snippets",
+        "plain_snippets",
+        "require_close_reason",
         "recipient_thread_close",
         "thread_show_roles",
         "thread_show_account_age",
@@ -363,7 +373,7 @@ class ConfigManager:
 
         return value
 
-    def set(self, key: str, item: typing.Any, convert=True) -> None:
+    async def set(self, key: str, item: typing.Any, convert=True) -> None:
         if not convert:
             return self.__setitem__(key, item)
 
@@ -397,8 +407,8 @@ class ConfigManager:
                 isodate.parse_duration(item)
             except isodate.ISO8601Error:
                 try:
-                    converter = UserFriendlyTimeSync()
-                    time = converter.convert(None, item)
+                    converter = UserFriendlyTime()
+                    time = await converter.convert(None, item, now=discord.utils.utcnow())
                     if time.arg:
                         raise ValueError
                 except BadArgument as exc:
@@ -409,7 +419,8 @@ class ConfigManager:
                         "Unrecognized time, please use ISO-8601 duration format "
                         'string or a simpler "human readable" time.'
                     )
-                item = isodate.duration_isoformat(time.dt - converter.now)
+                now = discord.utils.utcnow()
+                item = isodate.duration_isoformat(time.dt - now)
             return self.__setitem__(key, item)
 
         if key in self.booleans:
