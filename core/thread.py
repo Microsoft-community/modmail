@@ -818,14 +818,14 @@ class Thread:
         """Returns List[user_dm_msg] and thread_channel_msg"""
         if not message.content and not message.attachments:
             raise MissingRequiredArgument(SimpleNamespace(name="msg"))
-        if not any(g.get_member(self.id) for g in self.bot.guilds):
-            return await message.channel.send(
-                embed=discord.Embed(
-                    color=self.bot.error_color,
-                    description="Your message could not be delivered since "
-                    "the recipient shares no servers with the bot.",
-                )
-            )
+        # if not any(g.get_member(self.id) for g in self.bot.guilds):
+        #     return await message.channel.send(
+        #         embed=discord.Embed(
+        #             color=self.bot.error_color,
+        #             description="Your message could not be delivered since "
+        #             "the recipient shares no servers with the bot.",
+        #         )
+        #     )
 
         user_msg_tasks = []
         tasks = []
