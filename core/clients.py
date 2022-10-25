@@ -648,7 +648,7 @@ class MongoDBClient(ApiClient):
         if member:
             avatar_url = member.display_avatar.url
         else:
-            avatar_url = author.display_avatar.url
+            avatar_url = message.author.display_avatar.url
 
         data = {
             "timestamp": str(message.created_at),
