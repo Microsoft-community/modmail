@@ -359,7 +359,7 @@ class Thread:
             embed.description += "."
 
         mutual_guilds = [g for g in self.bot.guilds if user in g.members]
-        if member is None or len(mutual_guilds) > 1:
+        if len(mutual_guilds) > 0:
             embed.add_field(name="Mutual Server(s)", value=", ".join(g.name for g in mutual_guilds))
 
         return embed
