@@ -1,18 +1,18 @@
-# fly.toml file generated for msc-modmail on 2022-08-26T00:51:48+01:00
+# fly.toml app configuration file generated for msc-modmail on 2023-05-26T15:23:18Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
 app = "msc-modmail"
+primary_region = "iad"
 kill_signal = "SIGINT"
-kill_timeout = 5
+kill_timeout = "5s"
 
-[env]
-  SWAP = "true"
+[experimental]
+  auto_rollback = true
 
 [deploy]
   strategy = "rolling"
 
-[experimental]
-  allowed_public_ports = []
-  auto_rollback = true
-  cmd = []
-  entrypoint = []
-  exec = []
+[env]
+  SWAP = "true"
