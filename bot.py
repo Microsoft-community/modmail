@@ -63,6 +63,12 @@ if sys.platform == "win32":
     except AttributeError:
         logger.error("Failed to use WindowsProactorEventLoopPolicy.", exc_info=True)
 
+def userStrOverride(self):
+    if self.discriminator == '0':
+        return self.name
+    return f'{self.name}#{self.discriminator}'
+
+discord.User.__str__ = userStrOverride
 
 class ModmailBot(commands.Bot):
     def __init__(self):
@@ -1744,9 +1750,16 @@ class ModmailBot(commands.Bot):
                 if force_null:
                     name = "null"
 
+                name = name.replace('.', '․')
+
                 name = new_name = (
-                    "".join(l for l in name if l not in string.punctuation and l.isprintable()) or "null"
-                ) + f"-{author.discriminator}"
+                    "".join(l for l in name if l in ['-', '_'] or (l not in string.punctuation and l.isprintable())) or "null"
+                )
+
+                if author.discriminator != "0":
+                    new_name += f"-{author.discriminator}"
+
+                print(new_name)
 
         counter = 1
         existed = set(c.name for c in guild.text_channels if c != exclude_channel)
