@@ -63,12 +63,15 @@ if sys.platform == "win32":
     except AttributeError:
         logger.error("Failed to use WindowsProactorEventLoopPolicy.", exc_info=True)
 
+
 def userStrOverride(self):
-    if self.discriminator == '0':
+    if self.discriminator == "0":
         return self.name
-    return f'{self.name}#{self.discriminator}'
+    return f"{self.name}#{self.discriminator}"
+
 
 discord.User.__str__ = userStrOverride
+
 
 class ModmailBot(commands.Bot):
     def __init__(self):
@@ -666,7 +669,6 @@ class ModmailBot(commands.Bot):
         return self.get_user(id) or await self.fetch_user(id)
 
     async def retrieve_emoji(self) -> typing.Tuple[str, str]:
-
         sent_emoji = self.config["sent_emoji"]
         blocked_emoji = self.config["blocked_emoji"]
 
@@ -740,7 +742,6 @@ class ModmailBot(commands.Bot):
         if isinstance(author, discord.Member):
             for r in author.roles:
                 if str(r.id) in self.blocked_roles:
-
                     blocked_reason = self.blocked_roles.get(str(r.id)) or ""
 
                     try:
@@ -799,7 +800,6 @@ class ModmailBot(commands.Bot):
         channel: discord.TextChannel = None,
         send_message: bool = False,
     ) -> bool:
-
         member = self.guild.get_member(author.id)
         if member is None:
             # try to find in other guilds
@@ -1750,10 +1750,15 @@ class ModmailBot(commands.Bot):
                 if force_null:
                     name = "null"
 
-                name = name.replace('.', '․')
+                name = name.replace(".", "․")
 
                 name = new_name = (
-                    "".join(l for l in name if l in ['-', '_'] or (l not in string.punctuation and l.isprintable())) or "null"
+                    "".join(
+                        l
+                        for l in name
+                        if l in ["-", "_"] or (l not in string.punctuation and l.isprintable())
+                    )
+                    or "null"
                 )
 
                 if author.discriminator != "0":
