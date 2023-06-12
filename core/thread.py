@@ -33,6 +33,7 @@ from core.utils import (
 
 logger = getLogger(__name__)
 
+
 def DisplayedName(user):
     if user.global_name is not None:
         return user.global_name
@@ -41,7 +42,8 @@ def DisplayedName(user):
             return user.name
         else:
             return f"{user.name}#{user.discriminator}"
-        
+
+
 class Thread:
     """Represents a discord Modmail thread"""
 
@@ -971,7 +973,7 @@ class Thread:
                 )
             else:
                 # Normal message
-                name = DisplayedName(author)  
+                name = DisplayedName(author)
                 avatar_url = avatar_url
                 embed.set_author(
                     name=name,
