@@ -1764,8 +1764,6 @@ class ModmailBot(commands.Bot):
                 if author.discriminator != "0":
                     new_name += f"-{author.discriminator}"
 
-                print(new_name)
-
         counter = 1
         existed = set(c.name for c in guild.text_channels if c != exclude_channel)
         while new_name in existed:
@@ -1809,7 +1807,7 @@ def main():
         sys.exit(0)
 
     # check discord version
-    discord_version = "2.0.1"
+    discord_version = "2.3.0"
     if discord.__version__ != discord_version:
         logger.error(
             "Dependencies are not updated, run pipenv install. discord.py version expected %s, received %s",

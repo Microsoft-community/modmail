@@ -33,7 +33,15 @@ from core.utils import (
 
 logger = getLogger(__name__)
 
-
+def DisplayedName(user):
+    if user.global_name is not None:
+        return user.global_name
+    else:
+        if user.discriminator == "0":
+            return user.name
+        else:
+            return f"{user.name}#{user.discriminator}"
+        
 class Thread:
     """Represents a discord Modmail thread"""
 
@@ -716,7 +724,6 @@ class Thread:
     async def find_linked_message_from_dm(
         self, message, either_direction=False, get_thread_channel=False
     ) -> typing.List[discord.Message]:
-
         joint_id = None
         if either_direction:
             joint_id = get_joint_id(message)
@@ -816,7 +823,7 @@ class Thread:
         self, message: discord.Message, anonymous: bool = False, plain: bool = False
     ) -> typing.Tuple[typing.List[discord.Message], discord.Message]:
         """Returns List[user_dm_msg] and thread_channel_msg"""
-        if not message.content and not message.attachments:
+        if not message.content and not message.attachments and not message.stickers:
             raise MissingRequiredArgument(SimpleNamespace(name="msg"))
         # if not any(g.get_member(self.id) for g in self.bot.guilds):
         #     return await message.channel.send(
@@ -909,7 +916,6 @@ class Thread:
         persistent_note: bool = False,
         thread_creation: bool = False,
     ) -> None:
-
         if not note and from_mod:
             self.bot.loop.create_task(self._restart_close_timer())  # Start or restart thread auto close
 
@@ -965,7 +971,7 @@ class Thread:
                 )
             else:
                 # Normal message
-                name = str(author)
+                name = DisplayedName(author)  
                 avatar_url = avatar_url
                 embed.set_author(
                     name=name,
@@ -975,7 +981,7 @@ class Thread:
         else:
             # Special note messages
             embed.set_author(
-                name=f"{'Persistent' if persistent_note else ''} Note ({author.name})",
+                name=f"{'Persistent' if persistent_note else ''} Note ({DisplayedName(author)})",
                 icon_url=system_avatar_url,
                 url=f"https://discordapp.com/users/{author.id}#{message.id}",
             )
