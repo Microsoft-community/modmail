@@ -11,7 +11,7 @@ typing-extensions = "==4.2.0"
 tomli = "==2.0.1"
 
 [packages]
-aiohttp = "==3.8.1"
+aiohttp = "==3.8.5"
 colorama = "~=0.4.5"
 "discord.py" = "==2.3.0"
 emoji = "==1.7.0"
