@@ -30,7 +30,7 @@ python-dotenv==0.20.0
 requests==2.28.1
 six==1.16.0
 tinycss2==1.2.1
-urllib3==1.26.16
+urllib3==1.26.18
 uvloop==0.17.0
 webencodings==0.5.1
 yarl==1.9.2
