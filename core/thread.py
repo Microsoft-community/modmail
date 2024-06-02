@@ -1461,29 +1461,20 @@ class ThreadManager:
                 view=view,
             )
 
-            try:
-                r, _ = await self.bot.wait_for(
-                    "reaction_add",
-                    check=lambda r, u: u.id == recipient.id
-                    and r.message.id == confirm.id
-                    and r.message.channel.id == confirm.channel.id
-                    and str(r.emoji) in (accept_emoji, deny_emoji),
-                    timeout=int(self.bot.config["confirm_thread_creation_timeout"].total_seconds()),
-                )
-            except asyncio.TimeoutError:
-                await view.wait()
-                if view.value is None:
-                    thread.cancelled = True
-                    self.bot.loop.create_task(
-                        destination.send(
-                            embed=discord.Embed(
-                                title=self.bot.config["thread_cancelled"],
-                                description="Timed out",
-                                color=self.bot.error_color,
-                            )
+            await view.wait()
+            if view.value is None:
+                thread.cancelled = True
+                self.bot.loop.create_task(
+                    destination.send(
+                        embed=discord.Embed(
+                            title=self.bot.config["thread_cancelled"],
+                            description="Timed out",
+                            color=self.bot.error_color,
                         )
                     )
-                    await confirm.edit(view=None)
+                )
+                await confirm.edit(view=None)
+
             if view.value is False:
                 thread.cancelled = True
                 self.bot.loop.create_task(
