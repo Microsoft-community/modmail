@@ -21,7 +21,6 @@ load_dotenv()
 
 
 class ConfigManager:
-
     public_keys = {
         # activity
         "twitch_url": "https://www.twitch.tv/discordmodmail/",
@@ -37,6 +36,7 @@ class ConfigManager:
         "account_age": isodate.Duration(),
         "guild_age": isodate.Duration(),
         "thread_cooldown": isodate.Duration(),
+        "log_expiration": isodate.Duration(),
         "reply_without_command": False,
         "anon_reply_without_command": False,
         "plain_reply_without_command": False,
@@ -126,7 +126,7 @@ class ConfigManager:
         "confirm_thread_creation": False,
         "prev_confirm_thread_creation": False,
         "confirm_thread_creation_title": "Confirm thread creation",
-        "confirm_thread_response": "React to confirm thread creation which will directly contact the moderators",
+        "confirm_thread_response": "Click the button to confirm thread creation which will directly contact the moderators.",
         "confirm_thread_creation_accept": "\N{WHITE HEAVY CHECK MARK}",
         "confirm_thread_creation_deny": "\N{NO ENTRY SIGN}",
         "confirm_thread_creation_timeout": isodate.Duration(minutes=2),
@@ -172,6 +172,8 @@ class ConfigManager:
         "database_type": "mongodb",
         "connection_uri": None,  # replace mongo uri in the future
         "owners": None,
+        "enable_presence_intent": False,
+        "registry_plugins_only": False,
         # bot
         "token": None,
         "enable_plugins": True,
@@ -182,13 +184,16 @@ class ConfigManager:
         "disable_updates": False,
         # Logging
         "log_level": "INFO",
+        "stream_log_format": "plain",
+        "file_log_format": "plain",
+        "discord_log_level": "INFO",
         # data collection
         "data_collection": True,
     }
 
     colors = {"mod_color", "recipient_color", "main_color", "error_color"}
 
-    time_deltas = {"account_age", "guild_age", "thread_auto_close", "thread_cooldown", "raid_mode_delay"}
+    time_deltas = {"account_age", "guild_age", "thread_auto_close", "thread_cooldown", "raid_mode_delay", "log_expiration"}
 
     booleans = {
         "use_user_id_channel_name",
@@ -228,6 +233,8 @@ class ConfigManager:
         "thread_show_join_age",
         "use_hoisted_top_role",
         "raid_mode",
+        "enable_presence_intent",
+        "registry_plugins_only",
     }
 
     enums = {
@@ -304,7 +311,7 @@ class ConfigManager:
     def __delitem__(self, key: str) -> None:
         return self.remove(key)
 
-    def get(self, key: str, convert=True) -> typing.Any:
+    def get(self, key: str, *, convert: bool = True) -> typing.Any:
         key = key.lower()
         if key not in self.all_keys:
             raise InvalidConfigError(f'Configuration "{key}" is invalid.')
