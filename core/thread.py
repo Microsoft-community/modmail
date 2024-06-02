@@ -1460,14 +1460,7 @@ class ThreadManager:
                 ),
                 view=view,
             )
-
-            accept_emoji = self.bot.config["confirm_thread_creation_accept"]
-            deny_emoji = self.bot.config["confirm_thread_creation_deny"]
-            emojis = [accept_emoji, deny_emoji]
-            for emoji in emojis:
-                await confirm.add_reaction(emoji)
-                await asyncio.sleep(0.2)
-
+            
             try:
                 r, _ = await self.bot.wait_for(
                     "reaction_add",
