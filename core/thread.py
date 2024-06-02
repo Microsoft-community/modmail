@@ -1460,7 +1460,7 @@ class ThreadManager:
                 ),
                 view=view,
             )
-            
+
             try:
                 r, _ = await self.bot.wait_for(
                     "reaction_add",
