@@ -193,7 +193,14 @@ class ConfigManager:
 
     colors = {"mod_color", "recipient_color", "main_color", "error_color"}
 
-    time_deltas = {"account_age", "guild_age", "thread_auto_close", "thread_cooldown", "raid_mode_delay", "log_expiration"}
+    time_deltas = {
+        "account_age",
+        "guild_age",
+        "thread_auto_close",
+        "thread_cooldown",
+        "raid_mode_delay",
+        "log_expiration",
+    }
 
     booleans = {
         "use_user_id_channel_name",
