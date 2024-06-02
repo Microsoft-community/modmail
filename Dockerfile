@@ -1,16 +1,8 @@
 FROM python:3.11-alpine as py
 
-RUN apt-get update &&  \
-    apt-get install --no-install-recommends -y \
-    # Install CairoSVG dependencies.
-    libcairo2 && \
-    # Cleanup APT.
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    # Create a non-root user.
-    useradd --shell /usr/sbin/nologin --create-home -d /opt/modmail modmail
+FROM py as build
+RUN apk add --no-cache build-base libffi-dev cairo
 
-RUN apk add --no-cache build-base libffi-dev
 COPY requirements.txt /
 RUN pip install --prefix=/inst -U -r /requirements.txt
 
@@ -22,6 +14,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     USING_DOCKER=yes
 
+FROM py
 COPY --from=build /inst /usr/local
 
 WORKDIR /modmailbot
