@@ -22,6 +22,4 @@ COPY --from=build /inst /usr/local
 WORKDIR /modmailbot
 COPY . /modmailbot
 
-COPY ./entrypoint.sh /
-ENTRYPOINT [ "/entrypoint.sh" ]
 CMD ["python", "bot.py"]
