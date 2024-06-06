@@ -989,7 +989,7 @@ class Thread:
         else:
             # Special note messages
             embed.set_author(
-                name=f"{'Persistent' if persistent_note else ''} Note ({DisplayedName(author)})",
+                name=f"{'Persistent' if persistent_note else ''} Note ({author.name})",
                 icon_url=system_avatar_url,
                 url=f"https://discordapp.com/users/{author.id}#{message.id}",
             )
