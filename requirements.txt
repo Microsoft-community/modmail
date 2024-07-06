@@ -7,7 +7,7 @@ attrs==23.2.0; python_version >= '3.7'
 brotli==1.1.0
 cairocffi==1.7.0; python_version >= '3.8'
 cairosvg==2.7.1
-certifi==2024.6.2; python_version >= '3.6'
+certifi==2024.7.4; python_version >= '3.6'
 cffi==1.16.0; python_version >= '3.8'
 charset-normalizer==3.3.2; python_full_version >= '3.7.0'
 colorama==0.4.6
