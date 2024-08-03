@@ -666,12 +666,15 @@ class MongoDBClient(ApiClient):
         message_id = str(message_id) or str(message.id)
 
         member = self.bot.guild.get_member(message.author.id)
+
+        ismod = not isinstance(message.channel, DMChannel)
+
         if member:
             avatar_url = member.display_avatar.url
         else:
             avatar_url = message.author.display_avatar.url
 
-        if "PERMACACHE_LOCATION" in os.environ:
+        if "PERMACACHE_LOCATION" in os.environ and ismod:
             for a in message.attachments:
                 task = asyncio.create_task(
                     self.warm_permacache(
@@ -689,7 +692,7 @@ class MongoDBClient(ApiClient):
                 "name": message.author.name,
                 "discriminator": message.author.discriminator,
                 "avatar_url": avatar_url,
-                "mod": not isinstance(message.channel, DMChannel),
+                "mod": ismod,
             },
             "content": message.content,
             "type": type_,
