@@ -671,9 +671,13 @@ class MongoDBClient(ApiClient):
         else:
             avatar_url = message.author.display_avatar.url
 
-        if 'PERMACACHE_LOCATION' in os.environ:
+        if "PERMACACHE_LOCATION" in os.environ:
             for a in message.attachments:
-                task = asyncio.create_task(self.warm_permacache(a.url.replace('cdn.discordapp.com/', os.environ['PERMACACHE_LOCATION'])))
+                task = asyncio.create_task(
+                    self.warm_permacache(
+                        a.url.replace("cdn.discordapp.com/", os.environ["PERMACACHE_LOCATION"])
+                    )
+                )
                 self.background_tasks.add(task)
                 task.add_done_callback(self.background_tasks.discard)
 
