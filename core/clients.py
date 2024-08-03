@@ -13,6 +13,10 @@ from pymongo.errors import ConfigurationError
 
 from core.models import InvalidConfigError, getLogger
 
+import asyncio
+import aiohttp
+import os
+
 logger = getLogger(__name__)
 
 
@@ -434,6 +438,8 @@ class ApiClient:
 
 
 class MongoDBClient(ApiClient):
+    background_tasks = set()
+
     def __init__(self, bot):
         mongo_uri = bot.config["connection_uri"]
         if mongo_uri is None:
@@ -643,6 +649,11 @@ class MongoDBClient(ApiClient):
             {"$set": {"messages.$.content": new_content, "messages.$.edited": True}},
         )
 
+    async def warm_permacache(self, url):
+        async with asyncio.timeout(10):
+            async with aiohttp.ClientSession() as session:
+                await session.head(url)
+
     async def append_log(
         self,
         message: Message,
@@ -659,6 +670,12 @@ class MongoDBClient(ApiClient):
             avatar_url = member.display_avatar.url
         else:
             avatar_url = message.author.display_avatar.url
+
+        if 'PERMACACHE_LOCATION' in os.environ:
+            for a in message.attachments:
+                task = asyncio.create_task(self.warm_permacache(a.url.replace('cdn.discordapp.com/', os.environ['PERMACACHE_LOCATION'])))
+                self.background_tasks.add(task)
+                task.add_done_callback(self.background_tasks.discard)
 
         data = {
             "timestamp": str(message.created_at),
