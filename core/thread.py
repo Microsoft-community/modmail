@@ -1088,7 +1088,7 @@ class Thread:
                             description = f"[{filename}]({url})"
                         embed.add_field(name="Sticker", value=description)
                     else:
-                        embed.add_field(name="Image", value=f"[{filename}]({url})")
+                        embed.add_field(name="Image", value=url)
                 embedded_image = True
             else:
                 if note:
@@ -1113,7 +1113,7 @@ class Thread:
         file_upload_count = 1
 
         for url, filename, _ in attachments:
-            embed.add_field(name=f"File upload ({file_upload_count})", value=f"[{filename}]({url})")
+            embed.add_field(name=f"File upload ({file_upload_count})", value=url)
             file_upload_count += 1
 
         if from_mod:
