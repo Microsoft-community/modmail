@@ -129,7 +129,8 @@ class ConfigManager:
         "confirm_thread_response": "Click the button to confirm thread creation which will directly contact the moderators.",
         "confirm_thread_creation_accept": "\N{WHITE HEAVY CHECK MARK}",
         "confirm_thread_creation_deny": "\N{NO ENTRY SIGN}",
-        "confirm_thread_creation_timeout": isodate.Duration(minutes=2),
+        "confirm_thread_creation_timeout": 20,
+        "confirm_thread_skip_role": None,
         # regex
         "use_regex_autotrigger": False,
         "use_hoisted_top_role": True,

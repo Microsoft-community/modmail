@@ -1449,7 +1449,7 @@ class ThreadManager:
 
                     await asyncio.sleep(int(timeout.total_seconds()))
 
-            view = ConfirmThreadCreationView()
+            view = ConfirmThreadCreationView(self.bot)
             view.add_item(AcceptButton(self.bot.config["confirm_thread_creation_accept"]))
             view.add_item(DenyButton(self.bot.config["confirm_thread_creation_deny"]))
             confirm = await destination.send(

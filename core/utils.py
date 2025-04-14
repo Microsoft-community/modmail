@@ -594,8 +594,8 @@ class DenyButton(discord.ui.Button):
 
 
 class ConfirmThreadCreationView(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=20)
+    def __init__(self, bot):
+        super().__init__(timeout=float(bot.config["confirm_thread_creation_timeout"]))
         self.value = None
 
 
