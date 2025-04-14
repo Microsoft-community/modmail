@@ -1431,7 +1431,19 @@ class ThreadManager:
 
         self.cache[recipient.id] = thread
 
-        if (message or not manual_trigger) and self.bot.config["confirm_thread_creation"]:
+        member = self.bot.guild.get_member(recipient.id)
+        if (
+            (message or not manual_trigger)
+            and self.bot.config["confirm_thread_creation"]
+            and (
+                member == None
+                or self.bot.config["confirm_thread_skip_role"] == None
+                or (
+                    self.bot.modmail_guild.get_role(int(self.bot.config["confirm_thread_skip_role"]))
+                    not in member.roles
+                )
+            )
+        ):
             if not manual_trigger:
                 destination = recipient
             else:
