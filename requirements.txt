@@ -29,7 +29,7 @@ packaging==23.2
 parsedatetime==2.6
 pillow==10.3.0; python_version >= '3.8'
 propcache==0.4.1; python_version >= '3.9'
-pycares==4.4.0; python_version >= '3.8'
+pycares==4.9.0; python_version >= '3.8'
 pycparser==2.22; python_version >= '3.8'
 pymongo[srv]==4.7.2
 python-dateutil==2.8.2
