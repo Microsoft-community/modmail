@@ -1,4 +1,4 @@
-FROM python:3.11-alpine as py
+FROM python:3.14-alpine as py
 
 FROM py as build
 RUN apk add --no-cache build-base libffi-dev cairo pango
