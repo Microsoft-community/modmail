@@ -694,6 +694,13 @@ class MongoDBClient(ApiClient):
                 self.background_tasks.add(task)
                 task.add_done_callback(self.background_tasks.discard)
 
+        # Extract forwarded message content if applicable
+        content = message.content
+        snapshots = getattr(message, "message_snapshots", None)
+        if not content and isinstance(snapshots, (list, tuple)) and snapshots:
+            snap = snapshots[0]
+            content = "[Forwarded message]\n" + snap.content if snap.content else "[Forwarded message]"
+
         data = {
             "timestamp": str(message.created_at),
             "message_id": message_id,
@@ -704,7 +711,7 @@ class MongoDBClient(ApiClient):
                 "avatar_url": message.author.display_avatar.url if message.author.display_avatar else None,
                 "mod": ismod,
             },
-            "content": message.content,
+            "content": content,
             "type": type_,
             "attachments": [
                 {
