@@ -25,7 +25,7 @@ lottie[pdf]==0.7.2; python_version >= '3'
 motor==3.7.1; python_version >= '3.9'
 multidict==6.7.0; python_version >= '3.9'
 natural==0.2.0
-orjson==3.11.5; python_version >= '3.9'
+orjson==3.11.6; python_version >= '3.9'
 packaging==23.2; python_version >= '3.7'
 parsedatetime==2.6
 pillow==12.1.0; python_version >= '3.10'
