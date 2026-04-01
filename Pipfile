@@ -10,7 +10,7 @@ pylint = "==3.0.2"
 tomli = "==2.2.1"  # Needed for black on Python < 3.11
 
 [packages]
-aiohttp = "==3.13.3"
+aiohttp = "==3.13.4"
 async-timeout = {version = "==5.0.1", markers = "python_version < '3.11'"}  # Required by aiohttp
 typing-extensions = ">=4.12.2"  # Required by aiohttp
 colorama = "==0.4.6"
