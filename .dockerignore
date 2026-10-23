@@ -150,5 +150,3 @@ docker-compose.yml
 Procfile
 pyproject.toml
 README.md
-Pipfile
-Pipfile.lock

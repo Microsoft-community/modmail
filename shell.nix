@@ -1,5 +1,5 @@
 with import <nixpkgs> {};
 stdenv.mkDerivation {
   name = "modmail";
-  buildInputs = [ python311 pipenv railway ];
+  buildInputs = [ python314 pipenv railway ];
 }
